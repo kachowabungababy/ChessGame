@@ -1,9 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import HealthBar from './HealthBar';
-import { ROSTER } from '../game/pokemonRoster';
-import { getBattleSprites } from '../game/pokeApi';
-import { soundEffects } from '../game/audio';
+# Battle Arena Environment Redesign — Implementation Plan
 
+Self-contained implementation spec. Any coding agent (Gemini in Antigravity, or otherwise) can execute this without prior conversation context — every step lists exact file paths, current code, and exact replacement code.
+
+## Context
+
+`src/components/BattleScreen.jsx` renders a full-screen Pokémon-battle-style overlay when a chess piece is captured. It uses a `BattleEnvironment({ theme })` sub-component to draw an SVG backdrop (`viewBox="0 0 800 400"`, `preserveAspectRatio="none"`, stretched to fill the `.battle-scene` box, max `780×500`) behind two "podium" divs where the attacker/defender Pokémon sprites stand.
+
+There are 8 arena themes defined in `src/game/themes.js` (`ARENA_THEMES`): `classic`, `volcano`, `ice`, `petalburg`, `sootopolis`, `skypillar`, `mauville`, `pyre`. Before this plan, only `volcano`, `ice`, `petalburg`, and `sootopolis` had any real scenery — `classic`, `skypillar`, `mauville`, and `pyre` fell through to a placeholder (`default` case) that is just a flat navy rect and two blurred circles. A user screenshot confirmed this looks empty/unfinished. Additionally there was no distinct "battle field" ground disc under each Pokémon (only a thin glowing podium ring), which made every theme feel flat.
+
+This plan replaces the entire environment system: full custom scenery for all 8 themes, a shared CSS-based grounding disc under each Pokémon, and subtle ambient motion (drifting mist/clouds, twinkling stars/embers, pulsing light sources).
+
+### Geometry contract (do not violate)
+
+The SVG is stretched non-uniformly to fill the scene box, which maps the two sprite footprints to these **forbidden rectangles** — never place a high-contrast shape or stroke inside them, or it will visibly cut across a Pokémon:
+
+- **Attacker** (bottom-left podium): `x 100–279, y 186–326`
+- **Defender** (top-right podium): `x 508–671, y 0–128`
+
+Safe zones used throughout every theme's art:
+- **Z1** left margin — `x 0–96, y 0–400`
+- **Z2** upper-left sky — `x 0–500, y 0–180`
+- **Z3** centre corridor — `x 290–500, y 0–400` (each theme's large centrepiece silhouette goes here)
+- **Z4** lower-right — `x 500–800, y 136–400`
+- **Z5** right margin — `x 680–800, y 0–400`
+- **Z6** floor band — `x 0–800, y 328–400` (shared horizon, see `FLOOR_BACK`/`FLOOR_FRONT` below)
+
+## Changes
+
+### Change A — `src/components/BattleScreen.jsx`: full `BattleEnvironment` replacement
+
+Replace the entire `BattleEnvironment` function (all switch cases, from `function BattleEnvironment({ theme }) {` through its closing `}`) with the code below. This includes two new module-level constants (`FLOOR_BACK`, `FLOOR_FRONT` — the shared horizon path every theme draws so all 8 arenas share one eye level) and a shared `EnvVignette` sub-component (edge-darkening overlay drawn last in every theme, shared gradient id `envVignette`).
+
+```jsx
 /* ------------------------------------------------------------------ */
 /* BATTLE ENVIRONMENT                                                  */
 /*                                                                     */
@@ -590,218 +618,300 @@ function BattleEnvironment({ theme }) {
       );
   }
 }
+```
 
-export default function BattleScreen({
-  captureInfo,
-  onComplete,
-  isCheckmate = false,
-  theme = 'classic',
-}) {
-  const [attackerSprites, setAttackerSprites] = useState({ front: '', back: '' });
-  const [defenderSprites, setDefenderSprites] = useState({ front: '', back: '' });
+Everything else in `BattleScreen.jsx` (the exported `BattleScreen` component below `BattleEnvironment`) is untouched by Change A.
 
-  const [defenderHp, setDefenderHp] = useState(100);
-  const [phase, setPhase] = useState('intro'); // 'intro' | 'attack' | 'hit' | 'faint' | 'done'
-  const [dialogText, setDialogText] = useState('');
+### Change B — `src/components/BattleScreen.jsx`: add field-platform divs
 
-  const attackerPiece = captureInfo?.attacker;
-  const defenderPiece = captureInfo?.defender;
+Add a grounding div as the **first child** of each podium container, before `.battle-podium-oval`.
 
-  const attackerName = attackerPiece ? ROSTER[attackerPiece.color]?.[attackerPiece.type] : '';
-  const defenderName = defenderPiece ? ROSTER[defenderPiece.color]?.[defenderPiece.type] : '';
-
-  const formatName = (name) =>
-    name
-      ? name
-          .split('-')
-          .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-          .join(' ')
-      : 'Pokémon';
-
-  const formattedAttacker = formatName(attackerName);
-  const formattedDefender = formatName(defenderName);
-
-  // Determine piece-specific attack text & class
-  let moveName = 'Attack';
-  let attackAnimClass = 'lunge-attack-pawn';
-  if (attackerPiece) {
-    switch (attackerPiece.type) {
-      case 'n':
-        moveName = 'Wild Charge';
-        attackAnimClass = 'lunge-attack-knight';
-        break;
-      case 'b':
-        moveName = 'Psystrike';
-        attackAnimClass = 'lunge-attack-bishop';
-        break;
-      case 'r':
-        moveName = 'Heavy Slam';
-        attackAnimClass = 'lunge-attack-rook';
-        break;
-      case 'q':
-        moveName = 'Hyper Beam';
-        attackAnimClass = 'lunge-attack-queen';
-        break;
-      case 'k':
-        moveName = 'Sunsteel Strike';
-        attackAnimClass = 'lunge-attack-king';
-        break;
-      default:
-        moveName = 'Tackle';
-        attackAnimClass = 'lunge-attack-pawn';
-    }
-  }
-
-  // Fetch sprites on mount
-  useEffect(() => {
-    let isMounted = true;
-    if (attackerName && defenderName) {
-      Promise.all([
-        getBattleSprites(attackerName),
-        getBattleSprites(defenderName),
-      ]).then(([attRes, defRes]) => {
-        if (isMounted) {
-          setAttackerSprites(attRes);
-          setDefenderSprites(defRes);
-        }
-      });
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [attackerName, defenderName]);
-
-  // Battle Animation & Sound Timeline
-  useEffect(() => {
-    const introText = isCheckmate
-      ? `CHECKMATE! ${formattedAttacker} unleashes ${moveName} on King ${formattedDefender}!`
-      : `${formattedAttacker} used ${moveName}!`;
-    setDialogText(introText);
-
-    // 1. Attack phase (800ms)
-    const timer1 = setTimeout(() => {
-      setPhase('attack');
-      soundEffects.playAttackSound(attackerPiece?.type || 'p');
-    }, 800);
-
-    // 2. Hit phase & HP Drain (1600ms)
-    const timer2 = setTimeout(() => {
-      setPhase('hit');
-      soundEffects.playHitSound();
-      setDefenderHp(0);
-    }, 1600);
-
-    // 3. Faint phase (2600ms)
-    const timer3 = setTimeout(() => {
-      setPhase('faint');
-      soundEffects.playFaintSound();
-      setDialogText(
-        isCheckmate
-          ? `King ${formattedDefender} fainted! GAME OVER!`
-          : `The opposing ${formattedDefender} fainted!`
-      );
-    }, 2600);
-
-    // 4. Complete battle (4000ms)
-    const timer4 = setTimeout(() => {
-      setPhase('done');
-      onComplete();
-    }, 4000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
-  }, [formattedAttacker, formattedDefender, moveName, attackerPiece, isCheckmate, onComplete]);
-
-  const handleSkip = () => {
-    onComplete();
-  };
-
-  if (!captureInfo) return null;
-
-  return (
-    <div className="battle-overlay" data-theme={theme}>
-      <div
-        className={`battle-scene ${
-          isCheckmate ? 'checkmate-battle' : ''
-        } theme-battle-${theme}`}
-      >
-        {/* Environment Background Graphics */}
-        <div className="battle-environment-bg">
-          <BattleEnvironment theme={theme} />
-        </div>
-
-        {isCheckmate && (
-          <div className="checkmate-header-badge font-poke">
-            FINAL BATTLE - CHECKMATE!
-          </div>
-        )}
-
-        <button className="btn-skip font-poke" onClick={handleSkip}>
-          Skip [►]
-        </button>
-
-        {/* 1. Defender HP Box (Top-Left) */}
-        <div className="defender-hp-box">
-          <HealthBar
-            name={defenderName}
-            isAttacker={false}
-            hpPercent={defenderHp}
-            level={50}
-          />
-        </div>
-
+**B1 — defender container**, current:
+```jsx
+        {/* 2. Defender Podium & Sprite (Top-Right Midground) */}
+        <div className="defender-podium-container">
+          <div className="battle-podium-oval">
+```
+New:
+```jsx
         {/* 2. Defender Podium & Sprite (Top-Right Midground) */}
         <div className="defender-podium-container">
           <div className="battle-field-platform" aria-hidden="true" />
           <div className="battle-podium-oval">
-            {defenderSprites.front && (
-              <img
-                src={defenderSprites.front}
-                alt={defenderName}
-                className={`battle-sprite defender-sprite ${
-                  phase === 'hit' ? 'hit-shake' : ''
-                } ${phase === 'faint' || phase === 'done' ? 'faint-drop' : ''}`}
-              />
-            )}
-          </div>
-        </div>
+```
 
+**B2 — attacker container**, current:
+```jsx
+        {/* 3. Attacker Podium & Sprite (Bottom-Left Foreground) */}
+        <div className="attacker-podium-container">
+          <div className="battle-podium-oval">
+```
+New:
+```jsx
         {/* 3. Attacker Podium & Sprite (Bottom-Left Foreground) */}
         <div className="attacker-podium-container">
           <div className="battle-field-platform" aria-hidden="true" />
           <div className="battle-podium-oval">
-            {attackerSprites.back && (
-              <img
-                src={attackerSprites.back}
-                alt={attackerName}
-                className={`battle-sprite attacker-sprite ${
-                  phase === 'attack' ? attackAnimClass : ''
-                }`}
-              />
-            )}
-          </div>
-        </div>
+```
 
-        {/* 4. Attacker HP Box (Bottom-Right) */}
-        <div className="attacker-hp-box">
-          <HealthBar
-            name={attackerName}
-            isAttacker={true}
-            hpPercent={100}
-            level={50}
-          />
-        </div>
+### Change C — `src/App.css`: `.battle-podium-oval` z-index
 
-        {/* 5. Retro Dialog Text Box (Bottom) */}
-        <div className="battle-dialog-box font-poke">
-          <p>{dialogText}</p>
-          <span className="dialog-arrow">▼</span>
-        </div>
-      </div>
-    </div>
+Add `z-index: 1;` so the ring paints above the new field-platform disc:
+
+```css
+/* 3D Battle Oval Base */
+.battle-podium-oval {
+  position: relative;
+  z-index: 1;
+  width: 230px;
+  height: 65px;
+  border-radius: 50%;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+```
+
+### Change D — `src/App.css`: recolor `.theme-battle-classic .battle-podium-oval`
+
+Replace (grass-green clashed with the new slate/gold championship hall):
+
+```css
+.theme-battle-classic .battle-podium-oval {
+  background: radial-gradient(ellipse at center, #e2e8f0 0%, #475569 60%, #0b1120 100%);
+  border: 4px solid #f59e0b;
+  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.7), inset 0 0 15px #fbbf24;
+}
+```
+
+### Change E — `src/App.css`: insert new block
+
+Insert immediately after the `.theme-battle-classic .battle-podium-oval` rule (Change D), before the `/* Attack & Hit Animations */` comment:
+
+```css
+/* ========================================= */
+/* BATTLE FIELD PLATFORM (grounding disc)    */
+/* ========================================= */
+/* A soft, theme-coloured ground disc that sits BEHIND the glowing
+   podium ring and gives each combatant visual weight.
+   Implemented in CSS (not in the env SVG) because the podiums are
+   positioned in px from the scene edges while the SVG stretches
+   non-uniformly (preserveAspectRatio="none") - an SVG ellipse would
+   drift out of alignment as the scene resizes. */
+
+.battle-field-platform {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.92;
+  background:
+    var(--field-texture, none),
+    radial-gradient(
+      ellipse at 50% 42%,
+      var(--field-core, #4ade80) 0%,
+      var(--field-mid, #15803d) 44%,
+      var(--field-edge, #052e16) 100%
+    );
+  -webkit-mask-image: radial-gradient(
+    ellipse at 50% 50%,
+    #000 46%,
+    rgba(0, 0, 0, 0.55) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: radial-gradient(
+    ellipse at 50% 50%,
+    #000 46%,
+    rgba(0, 0, 0, 0.55) 72%,
+    rgba(0, 0, 0, 0) 100%
   );
 }
+
+.defender-podium-container .battle-field-platform {
+  width: 300px;
+  height: 92px;
+}
+
+.attacker-podium-container .battle-field-platform {
+  width: 360px;
+  height: 118px;
+}
+
+.theme-battle-classic {
+  --field-core: #64748b;
+  --field-mid: #334155;
+  --field-edge: #0b1120;
+  --field-texture: repeating-linear-gradient(
+    90deg,
+    rgba(245, 158, 11, 0.16) 0 2px,
+    rgba(0, 0, 0, 0) 2px 26px
+  );
+}
+
+.theme-battle-volcano {
+  --field-core: #f97316;
+  --field-mid: #7f1d1d;
+  --field-edge: #140202;
+  --field-texture:
+    radial-gradient(circle at 30% 62%, rgba(249, 115, 22, 0.35) 0 6px, rgba(0, 0, 0, 0) 7px),
+    radial-gradient(circle at 68% 38%, rgba(220, 38, 38, 0.35) 0 5px, rgba(0, 0, 0, 0) 6px),
+    radial-gradient(circle at 52% 74%, rgba(251, 191, 36, 0.3) 0 4px, rgba(0, 0, 0, 0) 5px);
+}
+
+.theme-battle-ice {
+  --field-core: #e0f2fe;
+  --field-mid: #0284c7;
+  --field-edge: #032b43;
+  --field-texture: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.18) 0 3px,
+    rgba(0, 0, 0, 0) 3px 18px
+  );
+}
+
+.theme-battle-petalburg {
+  --field-core: #4ade80;
+  --field-mid: #15803d;
+  --field-edge: #022c22;
+  --field-texture: repeating-linear-gradient(
+    0deg,
+    rgba(220, 252, 231, 0.12) 0 2px,
+    rgba(0, 0, 0, 0) 2px 10px
+  );
+}
+
+.theme-battle-sootopolis {
+  --field-core: #93c5fd;
+  --field-mid: #1d4ed8;
+  --field-edge: #0b1329;
+  --field-texture: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.14) 0 2px,
+    rgba(0, 0, 0, 0) 2px 14px
+  );
+}
+
+.theme-battle-skypillar {
+  --field-core: #6ee7b7;
+  --field-mid: #047857;
+  --field-edge: #02120f;
+  --field-texture: repeating-linear-gradient(
+    90deg,
+    rgba(236, 253, 245, 0.12) 0 3px,
+    rgba(0, 0, 0, 0) 3px 22px
+  );
+}
+
+.theme-battle-mauville {
+  --field-core: #facc15;
+  --field-mid: #854d0e;
+  --field-edge: #0a0807;
+  --field-texture: repeating-linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.35) 0 3px,
+    rgba(0, 0, 0, 0) 3px 12px
+  );
+}
+
+.theme-battle-pyre {
+  --field-core: #c084fc;
+  --field-mid: #581c87;
+  --field-edge: #17072b;
+  --field-texture: radial-gradient(
+    circle at 50% 50%,
+    rgba(243, 232, 255, 0.18) 0 30%,
+    rgba(0, 0, 0, 0) 62%
+  );
+}
+
+/* ========================================= */
+/* ENVIRONMENT AMBIENT MOTION                */
+/* ========================================= */
+
+@keyframes envDrift {
+  from { transform: translateX(-10px); }
+  to   { transform: translateX(10px); }
+}
+
+@keyframes envTwinkle {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+
+@keyframes envPulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.06); }
+}
+
+.env-drift {
+  animation: envDrift 9s ease-in-out infinite alternate;
+}
+
+.env-twinkle {
+  animation: envTwinkle 3.2s ease-in-out infinite;
+}
+
+.env-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: envPulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .env-drift,
+  .env-twinkle,
+  .env-pulse {
+    animation: none;
+  }
+}
+
+/* On very narrow scenes the two sprite boxes overlap the flanks,
+   so the small flank details are dropped. */
+@media (max-width: 560px) {
+  .env-detail {
+    display: none;
+  }
+}
+```
+
+### Change F — `src/App.css`: mobile field-platform sizes
+
+Inside the existing `@media (max-width: 840px)` block, add directly after the `.attacker-podium-container .battle-sprite { … }` rule:
+
+```css
+  .defender-podium-container .battle-field-platform {
+    width: 216px;
+    height: 70px;
+  }
+
+  .attacker-podium-container .battle-field-platform {
+    width: 250px;
+    height: 86px;
+  }
+```
+
+## Apply order
+
+1. Change A (replace `BattleEnvironment`) — largest, self-contained.
+2. Change B (two JSX divs).
+3. Changes C + D (edit two existing CSS rules).
+4. Change E (insert the new CSS block after the `theme-battle-classic` podium rule).
+5. Change F (two rules inside the existing 840px media query).
+
+No step depends on a later step; A/B and C–F can be applied in either order.
+
+## Verification
+
+1. `npm run build` — must succeed with no errors.
+2. `npm run dev`, open the app, pick each of the 8 arena themes on the home screen, then trigger a capture to open the battle overlay. For every theme confirm:
+   - The backdrop is not a flat navy rect — each theme has distinct scenery matching its Pokémon-lore identity (classic = league hall with pillars/banners, skypillar = ancient ruins/clouds, mauville = industrial generator plant, pyre = misty graveyard, plus the existing volcano/ice/forest/ocean).
+   - A soft themed disc is visible under each Pokémon, behind the glowing podium ring.
+   - No bright/high-contrast line visibly cuts across either Pokémon sprite.
+   - The ground horizon is visible above the dialog box, not swallowed by it.
+3. Resize the window from ~1400px down to ~380px wide — the field discs must stay centered on their podiums at every width.
+4. Toggle OS-level "reduce motion" and confirm the drift/twinkle/pulse animations stop (`prefers-reduced-motion` media query).
+5. `grep -rn "rotateX" src/` — must return no results (unrelated prior fix, must not regress).
