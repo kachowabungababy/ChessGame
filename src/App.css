@@ -1467,33 +1467,16 @@ body {
 }
 
 .defender-sprite {
-  bottom: 20px;
-  width: 140px;
-  height: 140px;
+  transform: scale(1.15);
 }
 
 .attacker-sprite {
-  bottom: 25px;
-  width: 155px;
-  height: 155px;
-}
-
-/* Environment Background Visual Elements per Theme */
-.battle-environment-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
+  transform: scale(1.25);
 }
 
 /* ========================================= */
-/* THEMED BATTLE OVERLAY & PODIUMS          */
+/* THEMED BATTLE PODIUMS                    */
 /* ========================================= */
-
-.theme-battle-volcano {
-  background: radial-gradient(circle at 50% 30%, #f97316 0%, #7f1d1d 50%, #080202 100%);
-  border-color: #ef4444;
-}
 
 .theme-battle-volcano .battle-podium {
   background: radial-gradient(ellipse at center, #dc2626 0%, #7f1d1d 60%, #1c0505 100%);
@@ -1501,38 +1484,10 @@ body {
   box-shadow: 0 12px 25px rgba(239, 68, 68, 0.85), inset 0 0 15px #f97316;
 }
 
-.theme-battle-volcano .volcano-mountain {
-  position: absolute;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 250px;
-  background: radial-gradient(circle at 50% 0%, #ef4444 0%, transparent 60%), linear-gradient(180deg, transparent 0%, rgba(220, 38, 38, 0.2) 100%);
-}
-
-.theme-battle-ice {
-  background: radial-gradient(circle at 50% 30%, #38bdf8 0%, #0369a1 50%, #031726 100%);
-  border-color: #38bdf8;
-}
-
 .theme-battle-ice .battle-podium {
   background: radial-gradient(ellipse at center, #e0f2fe 0%, #0284c7 60%, #032b43 100%);
   border: 4px solid #38bdf8;
-  box-shadow: 0 12px 25px rgba(56, 189, 248, 0.85), inset 0 0 15px #e0f2fe;
-}
-
-.theme-battle-ice .ice-stalactites {
-  position: absolute;
-  top: 0;
-  inset-x: 0;
-  height: 180px;
-  background-image: repeating-linear-gradient(135deg, rgba(224, 242, 254, 0.25) 0px, rgba(224, 242, 254, 0.25) 15px, transparent 15px, transparent 30px);
-}
-
-.theme-battle-petalburg {
-  background: radial-gradient(circle at 50% 30%, #4ade80 0%, #15803d 50%, #011910 100%);
-  border-color: #22c55e;
+  box-shadow: 0 12px 25px rgba(56, 189, 248, 0.85), inset 0 0 15px #38bdf8;
 }
 
 .theme-battle-petalburg .battle-podium {
@@ -1541,28 +1496,10 @@ body {
   box-shadow: 0 12px 25px rgba(34, 197, 94, 0.85), inset 0 0 15px #4ade80;
 }
 
-.theme-battle-petalburg .forest-canopy {
-  position: absolute;
-  top: 0;
-  inset-x: 0;
-  height: 160px;
-  background: radial-gradient(circle at 50% 0%, #22c55e 0%, transparent 70%);
-}
-
-.theme-battle-sootopolis {
-  background: radial-gradient(circle at 50% 30%, #60a5fa 0%, #1d4ed8 50%, #0b1329 100%);
-  border-color: #60a5fa;
-}
-
 .theme-battle-sootopolis .battle-podium {
   background: radial-gradient(ellipse at center, #dbeafe 0%, #1e40af 60%, #172554 100%);
   border: 4px solid #60a5fa;
   box-shadow: 0 12px 25px rgba(96, 165, 250, 0.85), inset 0 0 15px #60a5fa;
-}
-
-.theme-battle-skypillar {
-  background: radial-gradient(circle at 50% 30%, #34d399 0%, #047857 50%, #021f18 100%);
-  border-color: #10b981;
 }
 
 .theme-battle-skypillar .battle-podium {
@@ -1571,20 +1508,10 @@ body {
   box-shadow: 0 12px 25px rgba(16, 185, 129, 0.85), inset 0 0 15px #34d399;
 }
 
-.theme-battle-mauville {
-  background: radial-gradient(circle at 50% 30%, #facc15 0%, #ca8a04 50%, #0c0a09 100%);
-  border-color: #eab308;
-}
-
 .theme-battle-mauville .battle-podium {
   background: radial-gradient(ellipse at center, #fef9c3 0%, #854d0e 60%, #1c1917 100%);
   border: 4px solid #eab308;
   box-shadow: 0 12px 25px rgba(250, 204, 21, 0.85), inset 0 0 15px #facc15;
-}
-
-.theme-battle-pyre {
-  background: radial-gradient(circle at 50% 30%, #c084fc 0%, #7e22ce 50%, #17072b 100%);
-  border-color: #a855f7;
 }
 
 .theme-battle-pyre .battle-podium {
@@ -1621,9 +1548,9 @@ body {
 }
 
 @keyframes lungePawn {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
-  50% { transform: rotateX(-60deg) scale(1.6) translate(60px, -30px); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
+  0% { transform: scale(1.25) translate(0, 0); }
+  50% { transform: scale(1.35) translate(60px, -30px); }
+  100% { transform: scale(1.25) translate(0, 0); }
 }
 
 .lunge-attack-knight {
@@ -1631,10 +1558,10 @@ body {
 }
 
 @keyframes lungeKnight {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
-  40% { transform: rotateX(-60deg) scale(1.7) translate(40px, -90px) rotate(-15deg); }
-  70% { transform: rotateX(-60deg) scale(1.7) translate(100px, -20px) rotate(10deg); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
+  0% { transform: scale(1.25) translate(0, 0); }
+  40% { transform: scale(1.45) translate(40px, -90px) rotate(-15deg); }
+  70% { transform: scale(1.45) translate(100px, -20px) rotate(10deg); }
+  100% { transform: scale(1.25) translate(0, 0); }
 }
 
 .lunge-attack-bishop {
@@ -1642,9 +1569,9 @@ body {
 }
 
 @keyframes lungeBishop {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); filter: brightness(1); }
-  50% { transform: rotateX(-60deg) scale(1.7) translate(90px, -45px); filter: brightness(2) drop-shadow(0 0 15px #a855f7); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); filter: brightness(1); }
+  0% { transform: scale(1.25) translate(0, 0); filter: brightness(1); }
+  50% { transform: scale(1.45) translate(90px, -45px); filter: brightness(2) drop-shadow(0 0 15px #a855f7); }
+  100% { transform: scale(1.25) translate(0, 0); filter: brightness(1); }
 }
 
 .lunge-attack-rook {
@@ -1652,10 +1579,10 @@ body {
 }
 
 @keyframes lungeRook {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
-  30% { transform: rotateX(-60deg) scale(1.4) translate(-20px, 10px); }
-  60% { transform: rotateX(-60deg) scale(1.8) translate(120px, -50px); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
+  0% { transform: scale(1.25) translate(0, 0); }
+  30% { transform: scale(1.15) translate(-20px, 10px); }
+  60% { transform: scale(1.55) translate(120px, -50px); }
+  100% { transform: scale(1.25) translate(0, 0); }
 }
 
 .lunge-attack-queen {
@@ -1663,10 +1590,10 @@ body {
 }
 
 @keyframes lungeQueen {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); filter: drop-shadow(0 0 0 transparent); }
-  40% { transform: rotateX(-60deg) scale(1.9) translate(70px, -35px); filter: drop-shadow(0 0 25px #f59e0b) saturate(3); }
-  70% { transform: rotateX(-60deg) scale(2) translate(110px, -55px); filter: drop-shadow(0 0 35px #ef4444) saturate(5); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); filter: drop-shadow(0 0 0 transparent); }
+  0% { transform: scale(1.25) translate(0, 0); filter: drop-shadow(0 0 0 transparent); }
+  40% { transform: scale(1.65) translate(70px, -35px); filter: drop-shadow(0 0 25px #f59e0b) saturate(3); }
+  70% { transform: scale(1.75) translate(110px, -55px); filter: drop-shadow(0 0 35px #ef4444) saturate(5); }
+  100% { transform: scale(1.25) translate(0, 0); filter: drop-shadow(0 0 0 transparent); }
 }
 
 .lunge-attack-king {
@@ -1674,9 +1601,9 @@ body {
 }
 
 @keyframes lungeKing {
-  0% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
-  50% { transform: rotateX(-60deg) scale(1.8) translate(80px, -40px); filter: drop-shadow(0 0 20px #eab308); }
-  100% { transform: rotateX(-60deg) scale(1.5) translate(0, 0); }
+  0% { transform: scale(1.25) translate(0, 0); }
+  50% { transform: scale(1.55) translate(80px, -40px); filter: drop-shadow(0 0 20px #eab308); }
+  100% { transform: scale(1.25) translate(0, 0); }
 }
 
 .hit-shake {
@@ -1684,11 +1611,11 @@ body {
 }
 
 @keyframes hitShakeAnim {
-  0%, 100% { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5)); transform: rotateX(-60deg) scale(1.4) translate(0, 0); }
-  20% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: rotateX(-60deg) scale(1.4) translate(-10px, 0); }
-  40% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: rotateX(-60deg) scale(1.4) translate(10px, 0); }
-  60% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: rotateX(-60deg) scale(1.4) translate(-5px, 0); }
-  80% { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5)); transform: rotateX(-60deg) scale(1.4) translate(5px, 0); }
+  0%, 100% { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5)); transform: scale(1.15) translate(0, 0); }
+  20% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: scale(1.15) translate(-10px, 0); }
+  40% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: scale(1.15) translate(10px, 0); }
+  60% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); transform: scale(1.15) translate(-5px, 0); }
+  80% { filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5)); transform: scale(1.15) translate(5px, 0); }
 }
 
 .faint-drop {
@@ -1696,8 +1623,8 @@ body {
 }
 
 @keyframes faintDropAnim {
-  0% { opacity: 1; transform: rotateX(-60deg) scale(1.4) translateY(0); }
-  100% { opacity: 0; transform: rotateX(-60deg) scale(1.4) translateY(80px); }
+  0% { opacity: 1; transform: scale(1.15) translateY(0); }
+  100% { opacity: 0; transform: scale(1.15) translateY(80px); }
 }
 
 /* Retro Dialog Box */
