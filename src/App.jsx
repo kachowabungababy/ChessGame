@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { ChessGameEngine, createEngine } from './game/chessEngine';
 import { saveMatch } from './game/gameStorage';
 import { soundEffects } from './game/audio';
+import { ARENA_THEMES } from './game/themes';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
 import MoveList from './components/MoveList';
@@ -17,6 +18,7 @@ export default function App() {
   const [aiElo, setAiElo] = useState(1200); // 400 to 2400
   const [showMoveHighlights, setShowMoveHighlights] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
+  const [theme, setTheme] = useState('classic');
 
   // Live Game State
   const engine = useMemo(() => new ChessGameEngine(), []);
@@ -36,6 +38,11 @@ export default function App() {
   const [replayMatch, setReplayMatch] = useState(null);
   const [replayMoveIndex, setReplayMoveIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+
+  // Synchronize document theme attribute
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Compute Material Advantage & Captured Pieces
   const activeBoard = useMemo(() => {
@@ -264,11 +271,18 @@ export default function App() {
     }
   };
 
-  const handleStartGame = ({ mode, elo, showMoveHighlights: movesFlag, showTooltips: tooltipsFlag }) => {
+  const handleStartGame = ({
+    mode,
+    elo,
+    showMoveHighlights: movesFlag,
+    showTooltips: tooltipsFlag,
+    theme: themeFlag,
+  }) => {
     setGameMode(mode);
     setAiElo(elo);
     setShowMoveHighlights(movesFlag);
     setShowTooltips(tooltipsFlag);
+    if (themeFlag) setTheme(themeFlag);
     handleResetGame();
     setView('game');
   };
@@ -301,6 +315,7 @@ export default function App() {
         initialMode={gameMode}
         initialShowMoves={showMoveHighlights}
         initialShowTooltips={showTooltips}
+        initialTheme={theme}
       />
     );
   }
@@ -327,14 +342,28 @@ export default function App() {
           {gameMode === 'ai' ? `vs AI (${aiElo} ELO)` : '2 Player Pass & Play'}
         </p>
 
-        {/* Dynamic In-Game Display Setting */}
+        {/* Dynamic In-Game Display & Theme Settings */}
         <div className="settings-toolbar">
+          <div className="theme-pills-list">
+            {ARENA_THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`theme-pill ${theme === t.id ? 'active' : ''}`}
+                onClick={() => setTheme(t.id)}
+                title={`Switch arena to ${t.name}`}
+              >
+                {t.icon} {t.name.split(' ')[0]}
+              </button>
+            ))}
+          </div>
+
           <button
             className={`tooltip-toggle-btn ${showTooltips ? 'enabled' : 'disabled'}`}
             onClick={() => setShowTooltips((prev) => !prev)}
             title="Toggle Pokémon name hover badge on/off during game"
           >
-            {showTooltips ? '🏷️ Hover Badges: ON' : '🏷️ Hover Badges: OFF'}
+            {showTooltips ? '🏷️ Badges: ON' : '🏷️ Badges: OFF'}
           </button>
         </div>
       </header>

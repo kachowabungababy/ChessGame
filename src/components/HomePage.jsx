@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ARENA_THEMES } from '../game/themes';
 
 const ELO_PRESETS = [
   {
@@ -45,11 +46,13 @@ export default function HomePage({
   initialMode = 'ai',
   initialShowMoves = true,
   initialShowTooltips = true,
+  initialTheme = 'classic',
 }) {
   const [mode, setMode] = useState(initialMode);
   const [elo, setElo] = useState(initialElo);
   const [showMoveHighlights, setShowMoveHighlights] = useState(initialShowMoves);
   const [showTooltips, setShowTooltips] = useState(initialShowTooltips);
+  const [theme, setTheme] = useState(initialTheme);
 
   // ELO rule: 1600+ ELO locks move highlights OFF (unallowed in high tier matches)
   const isMoveHighlightsLocked = mode === 'ai' && elo >= 1600;
@@ -59,6 +62,11 @@ export default function HomePage({
       setShowMoveHighlights(false);
     }
   }, [isMoveHighlightsLocked]);
+
+  // Apply body theme background preview
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   const getRankInfo = (rating) => {
     let closest = ELO_PRESETS[0];
@@ -83,6 +91,7 @@ export default function HomePage({
         elo,
         showMoveHighlights: isMoveHighlightsLocked ? false : showMoveHighlights,
         showTooltips,
+        theme,
       });
     }
   };
@@ -132,6 +141,27 @@ export default function HomePage({
               </div>
               <div className="radio-indicator">{mode === 'ai' ? '●' : '○'}</div>
             </div>
+          </div>
+        </div>
+
+        {/* Arena Theme Selector */}
+        <div className="home-section">
+          <h3 className="section-label">Select Battle Arena Theme</h3>
+          <div className="theme-cards-grid">
+            {ARENA_THEMES.map((t) => (
+              <div
+                key={t.id}
+                className={`theme-card ${theme === t.id ? 'active' : ''}`}
+                onClick={() => setTheme(t.id)}
+              >
+                <span className="theme-card-icon">{t.icon}</span>
+                <div className="theme-card-info">
+                  <h4>{t.name}</h4>
+                  <p>{t.desc}</p>
+                </div>
+                <div className="radio-indicator">{theme === t.id ? '●' : '○'}</div>
+              </div>
+            ))}
           </div>
         </div>
 
