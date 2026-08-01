@@ -142,7 +142,16 @@ export default function BattleScreen({
           isCheckmate ? 'checkmate-battle' : ''
         } theme-battle-${theme}`}
       >
-        <div className="battle-background" />
+        {/* Environment Background Elements */}
+        <div className="battle-environment-bg">
+          <div className="theme-bg-element volcano-mountain" />
+          <div className="theme-bg-element ice-stalactites" />
+          <div className="theme-bg-element forest-canopy" />
+          <div className="theme-bg-element water-crater" />
+          <div className="theme-bg-element sky-ruins" />
+          <div className="theme-bg-element mauville-pipes" />
+          <div className="theme-bg-element ghost-fog" />
+        </div>
 
         {isCheckmate && (
           <div className="checkmate-header-badge font-poke">
@@ -154,15 +163,19 @@ export default function BattleScreen({
           Skip [►]
         </button>
 
-        {/* Defender Section (Top Right) */}
-        <div className="defender-side">
+        {/* 1. Defender HP Box (Top-Left) */}
+        <div className="defender-hp-container">
           <HealthBar
             name={defenderName}
             isAttacker={false}
             hpPercent={defenderHp}
             level={50}
           />
-          <div className="platform defender-platform">
+        </div>
+
+        {/* 2. Defender Platform & Sprite (Top-Right Midground) */}
+        <div className="defender-stage">
+          <div className="battle-podium defender-podium">
             {defenderSprites.front && (
               <img
                 src={defenderSprites.front}
@@ -175,9 +188,9 @@ export default function BattleScreen({
           </div>
         </div>
 
-        {/* Attacker Section (Bottom Left) */}
-        <div className="attacker-side">
-          <div className="platform attacker-platform">
+        {/* 3. Attacker Platform & Sprite (Bottom-Left Foreground) */}
+        <div className="attacker-stage">
+          <div className="battle-podium attacker-podium">
             {attackerSprites.back && (
               <img
                 src={attackerSprites.back}
@@ -188,6 +201,10 @@ export default function BattleScreen({
               />
             )}
           </div>
+        </div>
+
+        {/* 4. Attacker HP Box (Bottom-Right) */}
+        <div className="attacker-hp-container">
           <HealthBar
             name={attackerName}
             isAttacker={true}
@@ -196,7 +213,7 @@ export default function BattleScreen({
           />
         </div>
 
-        {/* Retro Dialog Text Box (Bottom) */}
+        {/* 5. Retro Dialog Text Box (Bottom) */}
         <div className="battle-dialog-box font-poke">
           <p>{dialogText}</p>
           <span className="dialog-arrow">▼</span>
