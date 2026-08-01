@@ -1405,122 +1405,131 @@ body {
   color: #0f172a;
 }
 
-/* 1. Defender HP Container (Top Left) */
-.defender-hp-container {
+/* Environment Background SVG */
+.battle-environment-bg {
   position: absolute;
-  top: 25px;
-  left: 25px;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.env-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 1. Defender HP Box (Top Left) */
+.defender-hp-box {
+  position: absolute;
+  top: 30px;
+  left: 30px;
   z-index: 30;
 }
 
-/* 2. Defender Stage & 3D Podium (Top Right Midground) */
-.defender-stage {
+/* 2. Defender Podium & Sprite (Top Right Midground) */
+.defender-podium-container {
   position: absolute;
-  top: 90px;
-  right: 80px;
-  z-index: 10;
+  top: 100px;
+  right: 90px;
+  z-index: 20;
 }
 
-/* 3. Attacker Stage & 3D Podium (Bottom Left Foreground) */
-.attacker-stage {
+/* 3. Attacker Podium & Sprite (Bottom Left Foreground) */
+.attacker-podium-container {
   position: absolute;
   bottom: 95px;
   left: 70px;
   z-index: 20;
 }
 
-/* 4. Attacker HP Container (Bottom Right) */
-.attacker-hp-container {
+/* 4. Attacker HP Box (Bottom Right) */
+.attacker-hp-box {
   position: absolute;
   bottom: 95px;
-  right: 25px;
+  right: 30px;
   z-index: 30;
 }
 
-/* 3D Battle Podiums */
-.battle-podium {
+/* 3D Battle Oval Base */
+.battle-podium-oval {
   position: relative;
+  width: 230px;
+  height: 65px;
   border-radius: 50%;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: center;
-  transform: rotateX(60deg);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
+  align-items: flex-end;
 }
 
-.defender-podium {
-  width: 220px;
-  height: 80px;
-}
-
-.attacker-podium {
-  width: 250px;
-  height: 90px;
-}
-
-.battle-sprite {
+/* Pokémon Sprite standing directly inside the podium oval */
+.battle-podium-oval .battle-sprite {
   position: absolute;
+  bottom: 12px;
+  width: 145px;
+  height: 145px;
   object-fit: contain;
   image-rendering: pixelated;
-  transform: rotateX(-60deg); /* Counter-rotate so sprite stands upright! */
-  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.6));
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.5));
 }
 
 .defender-sprite {
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 
 .attacker-sprite {
-  transform: scale(1.25);
+  transform: scale(1.2);
 }
 
 /* ========================================= */
-/* THEMED BATTLE PODIUMS                    */
+/* THEMED BATTLE PODIUM OVALS               */
 /* ========================================= */
 
-.theme-battle-volcano .battle-podium {
+.theme-battle-volcano .battle-podium-oval {
   background: radial-gradient(ellipse at center, #dc2626 0%, #7f1d1d 60%, #1c0505 100%);
   border: 4px solid #ef4444;
   box-shadow: 0 12px 25px rgba(239, 68, 68, 0.85), inset 0 0 15px #f97316;
 }
 
-.theme-battle-ice .battle-podium {
+.theme-battle-ice .battle-podium-oval {
   background: radial-gradient(ellipse at center, #e0f2fe 0%, #0284c7 60%, #032b43 100%);
   border: 4px solid #38bdf8;
   box-shadow: 0 12px 25px rgba(56, 189, 248, 0.85), inset 0 0 15px #38bdf8;
 }
 
-.theme-battle-petalburg .battle-podium {
+.theme-battle-petalburg .battle-podium-oval {
   background: radial-gradient(ellipse at center, #dcfce7 0%, #166534 60%, #022c22 100%);
   border: 4px solid #22c55e;
   box-shadow: 0 12px 25px rgba(34, 197, 94, 0.85), inset 0 0 15px #4ade80;
 }
 
-.theme-battle-sootopolis .battle-podium {
+.theme-battle-sootopolis .battle-podium-oval {
   background: radial-gradient(ellipse at center, #dbeafe 0%, #1e40af 60%, #172554 100%);
   border: 4px solid #60a5fa;
   box-shadow: 0 12px 25px rgba(96, 165, 250, 0.85), inset 0 0 15px #60a5fa;
 }
 
-.theme-battle-skypillar .battle-podium {
+.theme-battle-skypillar .battle-podium-oval {
   background: radial-gradient(ellipse at center, #ecfdf5 0%, #065f46 60%, #022c22 100%);
   border: 4px solid #10b981;
   box-shadow: 0 12px 25px rgba(16, 185, 129, 0.85), inset 0 0 15px #34d399;
 }
 
-.theme-battle-mauville .battle-podium {
+.theme-battle-mauville .battle-podium-oval {
   background: radial-gradient(ellipse at center, #fef9c3 0%, #854d0e 60%, #1c1917 100%);
   border: 4px solid #eab308;
   box-shadow: 0 12px 25px rgba(250, 204, 21, 0.85), inset 0 0 15px #facc15;
 }
 
-.theme-battle-pyre .battle-podium {
+.theme-battle-pyre .battle-podium-oval {
   background: radial-gradient(ellipse at center, #f3e8ff 0%, #581c87 60%, #2e1065 100%);
   border: 4px solid #a855f7;
   box-shadow: 0 12px 25px rgba(168, 85, 247, 0.85), inset 0 0 15px #c084fc;
 }
 
-.theme-battle-classic .battle-podium {
+.theme-battle-classic .battle-podium-oval {
   background: radial-gradient(ellipse at center, #86efac 0%, #15803d 60%, #022c22 100%);
   border: 4px solid #22c55e;
   box-shadow: 0 12px 20px rgba(34, 197, 94, 0.6);
