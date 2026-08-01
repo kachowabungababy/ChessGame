@@ -7,6 +7,7 @@ import Board from './components/Board';
 import MoveList from './components/MoveList';
 import BattleScreen from './components/BattleScreen';
 import GameHistory from './components/GameHistory';
+import CapturedPiecesTray, { computeGameStats } from './components/CapturedPiecesBar';
 import './App.css';
 
 export default function App() {
@@ -35,6 +36,29 @@ export default function App() {
   const [replayMatch, setReplayMatch] = useState(null);
   const [replayMoveIndex, setReplayMoveIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+
+  // Compute Material Advantage & Captured Pieces
+  const activeBoard = useMemo(() => {
+    if (replayMatch) {
+      const tempEngine = createEngine();
+      for (let i = 0; i < replayMoveIndex; i++) {
+        const san = replayMatch.moves[i];
+        if (san) {
+          try {
+            tempEngine.chess.move(san);
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+      return tempEngine.getBoard();
+    }
+    return board;
+  }, [replayMatch, replayMoveIndex, board]);
+
+  const gameStats = useMemo(() => {
+    return computeGameStats(activeBoard, gameMode);
+  }, [activeBoard, gameMode]);
 
   // Derive King in check square
   const inCheckSquare = useMemo(() => {
@@ -261,7 +285,6 @@ export default function App() {
   };
 
   // Active board and state derivation
-  const activeBoard = replayMatch ? replayData?.board || [] : board;
   const activeLastMove = replayMatch ? replayData?.lastMove : lastMove;
   const activeMoves = replayMatch ? replayData?.moves || [] : moves;
   const activeStatus = replayMatch
@@ -318,6 +341,19 @@ export default function App() {
 
       <main className="game-layout">
         <div className="board-section">
+          {/* Percentage Advantage Banner */}
+          <div className="advantage-banner">
+            <h2 className="advantage-title">{gameStats.advantageText}</h2>
+          </div>
+
+          {/* Top Captured Tray (Black's captures / White pieces taken) */}
+          <div className="captured-tray-wrapper top-tray">
+            <div className="tray-owner-label font-poke">
+              {gameMode === 'ai' ? 'Computer Captures' : 'Black Captures'}
+            </div>
+            <CapturedPiecesTray pieces={gameStats.capturedWhite} showTooltips={showTooltips} />
+          </div>
+
           <div className="status-banner">
             <span className={`status-text ${!replayMatch && engine.inCheck() ? 'check-text' : ''}`}>
               {activeStatus}
@@ -335,6 +371,14 @@ export default function App() {
             onSquareClick={handleSquareClick}
             disabled={!!activeCapture || !!replayMatch}
           />
+
+          {/* Bottom Captured Tray (White's captures / Black pieces taken) */}
+          <div className="captured-tray-wrapper bottom-tray">
+            <div className="tray-owner-label font-poke">
+              {gameMode === 'ai' ? 'Player Captures' : 'White Captures'}
+            </div>
+            <CapturedPiecesTray pieces={gameStats.capturedBlack} showTooltips={showTooltips} />
+          </div>
 
           <div className="controls-bar">
             {replayMatch ? (
