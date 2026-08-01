@@ -361,9 +361,20 @@ body {
   transform: translateY(-2px);
 }
 
-.preset-btn .preset-icon {
-  font-size: 1.4rem;
-  line-height: 1;
+.preset-btn .preset-icon,
+.preset-btn .trainer-icon-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.elo-badge .trainer-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .preset-btn .preset-elo {

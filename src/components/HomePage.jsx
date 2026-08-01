@@ -1,12 +1,42 @@
 import React, { useState, useEffect } from 'react';
 
 const ELO_PRESETS = [
-  { elo: 400, rank: 'Youngster', desc: 'Rookie • Makes frequent random mistakes', icon: '🧢' },
-  { elo: 800, rank: 'Bug Catcher', desc: 'Novice • Takes obvious open pieces', icon: '🐞' },
-  { elo: 1200, rank: 'Gym Leader', desc: 'Intermediate • Balanced tactical moves', icon: '⚔️' },
-  { elo: 1600, rank: 'Elite Four', desc: 'Advanced • Move hints locked OFF', icon: '🔮' },
-  { elo: 2000, rank: 'Champion', desc: 'Master • High-depth Minimax calculation', icon: '👑' },
-  { elo: 2400, rank: 'Red / Legend', desc: 'Grandmaster • Flawless strategic play', icon: '⚡' },
+  {
+    elo: 400,
+    rank: 'Youngster',
+    desc: 'Rookie • Makes frequent random mistakes',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/youngster.png',
+  },
+  {
+    elo: 800,
+    rank: 'Bug Catcher',
+    desc: 'Novice • Takes obvious open pieces',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher.png',
+  },
+  {
+    elo: 1200,
+    rank: 'Gym Leader',
+    desc: 'Intermediate • Balanced tactical moves',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/brock.png',
+  },
+  {
+    elo: 1600,
+    rank: 'Elite Four',
+    desc: 'Advanced • Move hints locked OFF',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/lance.png',
+  },
+  {
+    elo: 2000,
+    rank: 'Champion',
+    desc: 'Master • High-depth Minimax calculation',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/cynthia.png',
+  },
+  {
+    elo: 2400,
+    rank: 'Red / Legend',
+    desc: 'Grandmaster • Flawless strategic play',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/red.png',
+  },
 ];
 
 export default function HomePage({
@@ -111,7 +141,12 @@ export default function HomePage({
             <div className="elo-header">
               <h3 className="section-label">AI Difficulty Rating</h3>
               <div className="elo-badge">
-                {activeRank.icon} <strong>{elo} ELO</strong> — {activeRank.rank}
+                <img
+                  src={activeRank.iconUrl}
+                  alt={activeRank.rank}
+                  className="trainer-icon-img"
+                />
+                <strong>{elo} ELO</strong> — {activeRank.rank}
               </div>
             </div>
 
@@ -145,7 +180,11 @@ export default function HomePage({
                   onClick={() => setElo(p.elo)}
                   type="button"
                 >
-                  <span className="preset-icon">{p.icon}</span>
+                  <img
+                    src={p.iconUrl}
+                    alt={p.rank}
+                    className="trainer-icon-img"
+                  />
                   <span className="preset-elo">{p.elo}</span>
                   <span className="preset-rank">{p.rank}</span>
                 </button>
