@@ -1439,16 +1439,91 @@ body {
   align-items: flex-end;
 }
 
-.platform {
-  position: relative;
-  width: 180px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.15);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ========================================= */
+/* THEMED BATTLE OVERLAY & PLATFORMS        */
+/* ========================================= */
+
+.theme-battle-volcano {
+  background: radial-gradient(circle at 50% 30%, #f97316 0%, #7f1d1d 50%, #080202 100%);
+  border-color: #ef4444;
+}
+
+.theme-battle-volcano .platform {
+  background: radial-gradient(circle, #b91c1c 0%, #450a0a 70%, #1c0505 100%);
+  border: 3px solid #ef4444;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.85);
+}
+
+.theme-battle-ice {
+  background: radial-gradient(circle at 50% 30%, #38bdf8 0%, #0369a1 50%, #031726 100%);
+  border-color: #38bdf8;
+}
+
+.theme-battle-ice .platform {
+  background: radial-gradient(circle, #e0f2fe 0%, #0284c7 70%, #032b43 100%);
+  border: 3px solid #38bdf8;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.85);
+}
+
+.theme-battle-petalburg {
+  background: radial-gradient(circle at 50% 30%, #4ade80 0%, #15803d 50%, #011910 100%);
+  border-color: #22c55e;
+}
+
+.theme-battle-petalburg .platform {
+  background: radial-gradient(circle, #dcfce7 0%, #166534 70%, #022c22 100%);
+  border: 3px solid #22c55e;
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.85);
+}
+
+.theme-battle-sootopolis {
+  background: radial-gradient(circle at 50% 30%, #60a5fa 0%, #1d4ed8 50%, #0b1329 100%);
+  border-color: #60a5fa;
+}
+
+.theme-battle-sootopolis .platform {
+  background: radial-gradient(circle, #dbeafe 0%, #1e40af 70%, #172554 100%);
+  border: 3px solid #60a5fa;
+  box-shadow: 0 0 25px rgba(96, 165, 250, 0.85);
+}
+
+.theme-battle-skypillar {
+  background: radial-gradient(circle at 50% 30%, #34d399 0%, #047857 50%, #021f18 100%);
+  border-color: #10b981;
+}
+
+.theme-battle-skypillar .platform {
+  background: radial-gradient(circle, #ecfdf5 0%, #065f46 70%, #022c22 100%);
+  border: 3px solid #10b981;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.85);
+}
+
+.theme-battle-mauville {
+  background: radial-gradient(circle at 50% 30%, #facc15 0%, #ca8a04 50%, #0c0a09 100%);
+  border-color: #eab308;
+}
+
+.theme-battle-mauville .platform {
+  background: radial-gradient(circle, #fef9c3 0%, #854d0e 70%, #1c1917 100%);
+  border: 3px solid #eab308;
+  box-shadow: 0 0 25px rgba(250, 204, 21, 0.85);
+}
+
+.theme-battle-pyre {
+  background: radial-gradient(circle at 50% 30%, #c084fc 0%, #7e22ce 50%, #17072b 100%);
+  border-color: #a855f7;
+}
+
+.theme-battle-pyre .platform {
+  background: radial-gradient(circle, #f3e8ff 0%, #581c87 70%, #2e1065 100%);
+  border: 3px solid #a855f7;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.85);
+}
+
+.theme-battle-classic .platform {
+  background: radial-gradient(circle, #86efac 0%, #15803d 70%, #022c22 100%);
+  border: 3px solid #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
 }
 
 .defender-platform {

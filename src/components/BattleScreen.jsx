@@ -4,7 +4,12 @@ import { ROSTER } from '../game/pokemonRoster';
 import { getBattleSprites } from '../game/pokeApi';
 import { soundEffects } from '../game/audio';
 
-export default function BattleScreen({ captureInfo, onComplete, isCheckmate = false }) {
+export default function BattleScreen({
+  captureInfo,
+  onComplete,
+  isCheckmate = false,
+  theme = 'classic',
+}) {
   const [attackerSprites, setAttackerSprites] = useState({ front: '', back: '' });
   const [defenderSprites, setDefenderSprites] = useState({ front: '', back: '' });
 
@@ -131,8 +136,12 @@ export default function BattleScreen({ captureInfo, onComplete, isCheckmate = fa
   if (!captureInfo) return null;
 
   return (
-    <div className="battle-overlay">
-      <div className={`battle-scene ${isCheckmate ? 'checkmate-battle' : ''}`}>
+    <div className="battle-overlay" data-theme={theme}>
+      <div
+        className={`battle-scene ${
+          isCheckmate ? 'checkmate-battle' : ''
+        } theme-battle-${theme}`}
+      >
         <div className="battle-background" />
 
         {isCheckmate && (

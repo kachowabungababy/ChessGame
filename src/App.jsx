@@ -327,6 +327,7 @@ export default function App() {
         <BattleScreen
           captureInfo={activeCapture}
           isCheckmate={activeCapture.isCheckmate}
+          theme={theme}
           onComplete={handleBattleComplete}
         />
       )}
