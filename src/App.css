@@ -8,74 +8,124 @@
   --text-muted: #cbd5e1;
   --square-light: #e2e8f0;
   --square-dark: #64748b;
+  --square-light-bg: #e2e8f0;
+  --square-dark-bg: #64748b;
   --square-selected: #f59e0b;
   --square-last-move: rgba(251, 191, 36, 0.4);
   --square-check: #ef4444;
   --move-dot-color: rgba(34, 197, 94, 0.75);
+  --board-frame-bg: #0f172a;
+  --board-frame-border: #334155;
+  --texture-pattern: none;
 }
 
-/* Dynamic Arena Theme Custom Properties (Gen 3 & Iconic Pokémon Places) */
+/* =================================================== */
+/* REAL POKÉMON ARENA TEXTURES & PROCEDURAL PATTERNS   */
+/* =================================================== */
+
+/* 1. Mt. Chimney (Volcano - Magma & Obsidian Texture) */
 [data-theme="volcano"] {
   --bg-color: #080202;
-  --panel-bg: rgba(26, 5, 5, 0.95);
-  --panel-border: rgba(239, 68, 68, 0.3);
+  --panel-bg: rgba(26, 5, 5, 0.96);
+  --panel-border: rgba(239, 68, 68, 0.4);
   --accent-gold: #f97316;
-  --square-light: #ffedd5;
-  --square-dark: #991b1b;
+  --square-light: #fed7aa;
+  --square-dark: #7f1d1d;
+  --square-light-bg: repeating-linear-gradient(45deg, #fed7aa, #fed7aa 10px, #fdba74 10px, #fdba74 20px);
+  --square-dark-bg: radial-gradient(circle, #991b1b 0%, #450a0a 100%), repeating-linear-gradient(135deg, rgba(0,0,0,0.4) 0px, rgba(0,0,0,0.4) 4px, transparent 4px, transparent 8px);
+  --board-frame-bg: #1c0505;
+  --board-frame-border: #ef4444;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23dc2626' fill-opacity='0.12'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40z'/%3E%3Cpath d='M10 20l30-10v20L10 20zm50 40l30-10v20L60 60z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 2. Shoal Cave (Ice - Glacial Crystals & Frost Texture) */
 [data-theme="ice"] {
   --bg-color: #031726;
-  --panel-bg: rgba(8, 47, 73, 0.95);
-  --panel-border: rgba(56, 189, 248, 0.3);
+  --panel-bg: rgba(8, 47, 73, 0.96);
+  --panel-border: rgba(56, 189, 248, 0.4);
   --accent-gold: #38bdf8;
   --square-light: #e0f2fe;
-  --square-dark: #0284c7;
+  --square-dark: #0369a1;
+  --square-light-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 6px, transparent 6px, transparent 12px);
+  --square-dark-bg: linear-gradient(135deg, #0284c7 0%, #075985 100%), repeating-linear-gradient(-45deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 6px, transparent 6px, transparent 12px);
+  --board-frame-bg: #032b43;
+  --board-frame-border: #38bdf8;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%2338bdf8' fill-opacity='0.12'%3E%3Cpolygon points='30,0 60,30 30,60 0,30'/%3E%3Cpolygon points='30,10 50,30 30,50 10,30'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 3. Petalburg Woods (Grass - Moss Canopy & Oak Timber Texture) */
 [data-theme="petalburg"] {
   --bg-color: #011910;
-  --panel-bg: rgba(2, 44, 34, 0.95);
-  --panel-border: rgba(34, 197, 94, 0.3);
+  --panel-bg: rgba(2, 44, 34, 0.96);
+  --panel-border: rgba(34, 197, 94, 0.4);
   --accent-gold: #4ade80;
   --square-light: #dcfce7;
-  --square-dark: #15803d;
+  --square-dark: #166534;
+  --square-light-bg: repeating-linear-gradient(0deg, #dcfce7, #dcfce7 4px, #bbf7d0 4px, #bbf7d0 8px);
+  --square-dark-bg: repeating-linear-gradient(90deg, #15803d, #15803d 4px, #166534 4px, #166534 8px);
+  --board-frame-bg: #022c22;
+  --board-frame-border: #22c55e;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='%2322c55e' fill-opacity='0.12'%3E%3Ccircle cx='20' cy='20' r='16'/%3E%3Ccircle cx='0' cy='0' r='8'/%3E%3Ccircle cx='40' cy='0' r='8'/%3E%3Ccircle cx='0' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 4. Sootopolis City (Water - Ocean Crater Waves & Sapphire Texture) */
 [data-theme="sootopolis"] {
-  --bg-color: #0f172a;
-  --panel-bg: rgba(23, 37, 84, 0.95);
-  --panel-border: rgba(96, 165, 250, 0.35);
+  --bg-color: #0b1329;
+  --panel-bg: rgba(15, 23, 42, 0.96);
+  --panel-border: rgba(96, 165, 250, 0.4);
   --accent-gold: #60a5fa;
   --square-light: #dbeafe;
-  --square-dark: #1d4ed8;
+  --square-dark: #1e40af;
+  --square-light-bg: radial-gradient(circle at 30% 30%, #dbeafe 0%, #bfdbfe 100%);
+  --square-dark-bg: radial-gradient(circle at 70% 70%, #1d4ed8 0%, #1e3a8a 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 3px, transparent 3px, transparent 6px);
+  --board-frame-bg: #1e3a8a;
+  --board-frame-border: #60a5fa;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='30' viewBox='0 0 60 30'%3E%3Cg fill='%233b82f6' fill-opacity='0.12'%3E%3Cpath d='M0 10 Q15 0 30 10 T60 10 V30 H0 Z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 5. Sky Pillar (Ancient Emerald Stone & Cloud Ruins Texture) */
 [data-theme="skypillar"] {
   --bg-color: #021f18;
-  --panel-bg: rgba(6, 78, 59, 0.95);
-  --panel-border: rgba(52, 211, 153, 0.35);
+  --panel-bg: rgba(6, 78, 59, 0.96);
+  --panel-border: rgba(52, 211, 153, 0.4);
   --accent-gold: #34d399;
   --square-light: #ecfdf5;
-  --square-dark: #047857;
+  --square-dark: #065f46;
+  --square-light-bg: repeating-linear-gradient(45deg, #ecfdf5, #ecfdf5 8px, #a7f3d0 8px, #a7f3d0 16px);
+  --square-dark-bg: repeating-linear-gradient(-45deg, #047857, #047857 8px, #065f46 8px, #065f46 16px);
+  --board-frame-bg: #064e3b;
+  --board-frame-border: #10b981;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Cg fill='%2310b981' fill-opacity='0.12'%3E%3Crect x='5' y='5' width='40' height='40' fill='none' stroke='%2310b981' stroke-width='2'/%3E%3Crect x='15' y='15' width='20' height='20' fill='none' stroke='%2310b981' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 6. New Mauville (Electric Brushed Steel & Power Grid Texture) */
 [data-theme="mauville"] {
   --bg-color: #0c0a09;
-  --panel-bg: rgba(66, 32, 6, 0.95);
-  --panel-border: rgba(250, 204, 21, 0.35);
+  --panel-bg: rgba(44, 23, 6, 0.96);
+  --panel-border: rgba(250, 204, 21, 0.4);
   --accent-gold: #facc15;
   --square-light: #fef9c3;
-  --square-dark: #ca8a04;
+  --square-dark: #854d0e;
+  --square-light-bg: linear-gradient(90deg, #fef9c3 0%, #fef08a 100%), repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 2px, transparent 2px, transparent 4px);
+  --square-dark-bg: linear-gradient(90deg, #ca8a04 0%, #a16207 100%), repeating-linear-gradient(0deg, rgba(0,0,0,0.25), rgba(0,0,0,0.25) 2px, transparent 2px, transparent 4px);
+  --board-frame-bg: #1c1917;
+  --board-frame-border: #eab308;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='%23eab308' fill-opacity='0.12'%3E%3Cpath d='M0 20 L40 20 M20 0 L20 40' stroke='%23eab308' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* 7. Mt. Pyre (Ghost Mist & Spectral Cobblestone Texture) */
 [data-theme="pyre"] {
   --bg-color: #17072b;
-  --panel-bg: rgba(46, 16, 101, 0.95);
-  --panel-border: rgba(168, 85, 247, 0.3);
+  --panel-bg: rgba(46, 16, 101, 0.96);
+  --panel-border: rgba(168, 85, 247, 0.4);
   --accent-gold: #c084fc;
   --square-light: #f3e8ff;
-  --square-dark: #7e22ce;
+  --square-dark: #581c87;
+  --square-light-bg: radial-gradient(circle at 50% 50%, #f3e8ff 0%, #e9d5ff 100%);
+  --square-dark-bg: radial-gradient(circle at 50% 50%, #7e22ce 0%, #3b0764 100%), repeating-linear-gradient(45deg, rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 4px, transparent 4px, transparent 8px);
+  --board-frame-bg: #2e1065;
+  --board-frame-border: #a855f7;
+  --texture-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23a855f7' fill-opacity='0.12'%3E%3Ccircle cx='30' cy='30' r='20' stroke='%23a855f7' stroke-width='2' fill='none'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 * {
@@ -88,13 +138,14 @@
 body {
   font-family: 'Outfit', sans-serif;
   background: var(--bg-color);
-  background-image: radial-gradient(circle at top center, rgba(255, 255, 255, 0.05) 0%, transparent 80%);
+  background-image: var(--texture-pattern), radial-gradient(circle at top center, rgba(255, 255, 255, 0.08) 0%, transparent 80%);
+  background-repeat: repeat;
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: background-color 0.4s ease;
+  transition: background-color 0.4s ease, background-image 0.4s ease;
 }
 
 .font-poke {
@@ -807,12 +858,12 @@ body {
 }
 
 .chess-board-wrapper {
-  background: #0f172a;
-  padding: 12px;
-  border-radius: 14px;
-  border: 3px solid #334155;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 158, 11, 0.15);
-  transition: opacity 0.3s ease;
+  background: var(--board-frame-bg);
+  padding: 14px;
+  border-radius: 16px;
+  border: 4px solid var(--board-frame-border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--panel-border);
+  transition: all 0.4s ease;
   position: relative;
 }
 
@@ -850,31 +901,31 @@ body {
   align-items: center;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease;
+  transition: background 0.25s ease, background-color 0.25s ease;
   touch-action: manipulation;
 }
 
 .square.light {
-  background-color: var(--square-light);
+  background: var(--square-light-bg);
   color: #1e293b;
 }
 
 .square.dark {
-  background-color: var(--square-dark);
+  background: var(--square-dark-bg);
   color: #f8fafc;
 }
 
 .square.selected {
-  background-color: var(--square-selected) !important;
+  background: var(--square-selected) !important;
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
 .square.last-move {
-  background-color: var(--square-last-move) !important;
+  background: var(--square-last-move) !important;
 }
 
 .square.in-check {
-  background-color: var(--square-check) !important;
+  background: var(--square-check) !important;
   animation: checkGlow 1s infinite alternate;
 }
 
@@ -888,8 +939,8 @@ body {
   bottom: 2px;
   right: 4px;
   font-size: 0.65rem;
-  opacity: 0.45;
-  font-weight: 600;
+  opacity: 0.55;
+  font-weight: 700;
   pointer-events: none;
 }
 
