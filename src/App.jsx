@@ -13,6 +13,7 @@ import CapturedPiecesTray, { computeGameStats } from './components/CapturedPiece
 import TrainerLoginModal from './components/TrainerLoginModal';
 import StoryMap from './components/StoryMap';
 import PikachuCoachBanner from './components/PikachuCoachBanner';
+import WildPuzzleScreen from './components/WildPuzzleScreen';
 import './App.css';
 
 export default function App() {
@@ -310,6 +311,8 @@ export default function App() {
     setView('game');
   };
 
+  const [activeWildPuzzle, setActiveWildPuzzle] = useState(null);
+
   const handleSelectStoryStage = (stage) => {
     setActiveStoryStage(stage);
     setGameMode('ai');
@@ -343,11 +346,24 @@ export default function App() {
     return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
   }
 
+  if (activeWildPuzzle) {
+    return (
+      <WildPuzzleScreen
+        puzzle={activeWildPuzzle}
+        onComplete={(puzzle) => {
+          setActiveWildPuzzle(null);
+        }}
+        onExit={() => setActiveWildPuzzle(null)}
+      />
+    );
+  }
+
   if (view === 'story') {
     return (
       <StoryMap
         profile={profile}
         onSelectStage={handleSelectStoryStage}
+        onSelectWildPuzzle={(puzzle) => setActiveWildPuzzle(puzzle)}
         onBackToHome={() => setView('home')}
         onChangeProfile={() => setShowLoginModal(true)}
       />
@@ -464,6 +480,7 @@ export default function App() {
               engine={engine}
               activeBoard={activeBoard}
               turn={engine.getTurn()}
+              trainerName={profile?.handle || 'Trainer'}
             />
           )}
 

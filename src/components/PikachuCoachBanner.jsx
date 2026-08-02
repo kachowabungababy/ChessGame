@@ -1,16 +1,16 @@
 import React, { useMemo, useEffect } from 'react';
 import { speakText } from '../game/speechAudio';
 
-export default function PikachuCoachBanner({ engine, activeBoard, turn }) {
+export default function PikachuCoachBanner({ engine, activeBoard, turn, trainerName = 'Trainer' }) {
   const hintText = useMemo(() => {
     if (!engine || !activeBoard) {
-      return 'Control the center of the board and develop your pieces!';
+      return `Pika Pika! Control the center of the board, ${trainerName}!`;
     }
 
     try {
       // 1. In Check Warning
       if (engine.inCheck()) {
-        return 'Pikachu says: CHECK! Your King is under attack! Protect your King right away!';
+        return `Pika Pika! CHECK, ${trainerName}! Your King is under attack! Protect your King right away!`;
       }
 
       // 2. Check for captures available
@@ -22,28 +22,28 @@ export default function PikachuCoachBanner({ engine, activeBoard, turn }) {
         const pieceNames = { p: 'Pawn', n: 'Knight', b: 'Bishop', r: 'Rook', q: 'Queen' };
         const attackerPiece = pieceNames[bestCap.piece] || 'Piece';
         const defenderPiece = pieceNames[bestCap.captured] || 'Piece';
-        return `Pikachu Tip: Your ${attackerPiece} at ${bestCap.from} can capture their ${defenderPiece} at ${bestCap.to}!`;
+        return `Pika Pika! ${trainerName}, your ${attackerPiece} at ${bestCap.from} can capture their ${defenderPiece} at ${bestCap.to}!`;
       }
 
       // 3. General Beginner Advice
-      return 'Pikachu Tip: Try moving your Knights and Bishops towards the center of the board!';
+      return `Pika Pika! ${trainerName}, try moving your Knights and Bishops towards the center of the board!`;
     } catch (e) {
-      return 'Pikachu Tip: Think ahead before making your move!';
+      return `Pika Pika! ${trainerName}, think ahead before making your move!`;
     }
-  }, [engine, activeBoard, turn]);
+  }, [engine, activeBoard, turn, trainerName]);
 
   // Read aloud automatically when in check
   useEffect(() => {
     if (engine && typeof engine.inCheck === 'function' && engine.inCheck()) {
-      speakText('CHECK! Protect your King!');
+      speakText(`Pika Pika! CHECK, ${trainerName}! Protect your King!`, 'pikachu');
     }
-  }, [engine, turn]);
+  }, [engine, turn, trainerName]);
 
   return (
     <div className="pikachu-coach-banner font-poke animation-fade">
       <div
         className="pikachu-avatar-badge"
-        onClick={() => speakText(hintText)}
+        onClick={() => speakText(hintText, 'pikachu')}
         title="Tap Pikachu to listen"
         style={{ cursor: 'pointer' }}
       >
@@ -57,10 +57,10 @@ export default function PikachuCoachBanner({ engine, activeBoard, turn }) {
       <button
         type="button"
         className="btn-tts-mini"
-        onClick={() => speakText(hintText)}
-        title="Listen to Pikachu hint out loud"
+        onClick={() => speakText(hintText, 'pikachu')}
+        title="Listen to Pikachu Coach out loud"
       >
-        🔊 Listen
+        🔊 Pika Voice
       </button>
     </div>
   );

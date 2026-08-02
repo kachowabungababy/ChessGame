@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import { getStagesForTier, DIFFICULTY_TIERS, MOTIVATING_NPCS, AMBIENT_WORLD_NPCS } from '../game/storyCampaign';
+import { WILD_POKEMON_PUZZLES } from '../game/wildPuzzles';
 import { AVATAR_OPTIONS, getTrainerRankTitle } from '../game/profileStorage';
 import { speakText } from '../game/speechAudio';
 
-export default function StoryMap({ profile, onSelectStage, onBackToHome, onChangeProfile }) {
+export default function StoryMap({ profile, onSelectStage, onSelectWildPuzzle, onBackToHome, onChangeProfile }) {
   const [selectedStageId, setSelectedStageId] = useState(profile?.unlockedStage || 1);
   const activeTierId = profile?.difficultyTier || 'rookie';
 
   const activeStages = getStagesForTier(activeTierId);
   const avatarObj = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
   const rankTitle = getTrainerRankTitle(profile?.trainerElo || 100);
+  const trainerName = profile?.handle || 'Trainer';
+
+  const formatText = (txt) => {
+    if (!txt) return '';
+    return txt.replace(/\{name\}/g, trainerName);
+  };
 
   const currentStageIndex = activeStages.findIndex((s) => s.id === selectedStageId);
   const currentStage = activeStages[currentStageIndex] || activeStages[0];
@@ -18,11 +25,14 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
   const currentTierObj = DIFFICULTY_TIERS[activeTierId] || DIFFICULTY_TIERS.rookie;
   const activeNpc = MOTIVATING_NPCS[(selectedStageId - 1) % MOTIVATING_NPCS.length];
 
+  const activeNpcQuoteFormatted = formatText(activeNpc.quote);
+  const currentStageDialogueFormatted = formatText(currentStage.dialogue);
+
   const handlePrev = () => {
     if (currentStageIndex > 0) {
       const prevSt = activeStages[currentStageIndex - 1];
       setSelectedStageId(prevSt.id);
-      speakText(`${prevSt.name}. ${prevSt.dialogue}`);
+      speakText(`${prevSt.name}. ${formatText(prevSt.dialogue)}`);
     }
   };
 
@@ -30,7 +40,7 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
     if (currentStageIndex < activeStages.length - 1) {
       const nextSt = activeStages[currentStageIndex + 1];
       setSelectedStageId(nextSt.id);
-      speakText(`${nextSt.name}. ${nextSt.dialogue}`);
+      speakText(`${nextSt.name}. ${formatText(nextSt.dialogue)}`);
     }
   };
 
@@ -43,9 +53,9 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
             ◄ Menu
           </button>
           <div className="trainer-profile-chip" onClick={onChangeProfile} title="Change Profile">
-            <img src={avatarObj.url} alt={profile?.handle} className="chip-avatar-img" />
+            <img src={avatarObj.url} alt={trainerName} className="chip-avatar-img" />
             <div className="chip-info">
-              <span className="chip-handle font-poke">{profile?.handle || 'Trainer'}</span>
+              <span className="chip-handle font-poke">{trainerName}</span>
               <span className="chip-elo-badge font-poke">
                 {profile?.trainerElo || 100} ELO • {rankTitle}
               </span>
@@ -81,13 +91,37 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
             <button
               type="button"
               className="btn-tts-speaker"
-              onClick={() => speakText(`${activeNpc.name} says: ${activeNpc.quote}`)}
+              onClick={() => speakText(`${activeNpc.name} says: ${activeNpcQuoteFormatted}`, activeNpc.name)}
               title="Listen aloud"
             >
               🔊 Read Aloud
             </button>
           </div>
-          <p className="npc-quote-text">"{activeNpc.quote}"</p>
+          <p className="npc-quote-text">"{activeNpcQuoteFormatted}"</p>
+        </div>
+      </div>
+
+      {/* Wild Pokémon Grass Encounters Bar */}
+      <div className="wild-grass-encounters-bar font-poke">
+        <span className="wild-grass-title font-poke">🌿 Wild Pokémon Tactical Quizzes:</span>
+        <div className="wild-puzzles-list">
+          {WILD_POKEMON_PUZZLES.map((pz) => (
+            <button
+              key={pz.id}
+              type="button"
+              className="btn-wild-puzzle-chip"
+              onClick={() => {
+                speakText(`Hey ${trainerName}! A Wild ${pz.pokemonName} appeared! ${pz.type} challenge!`);
+                onSelectWildPuzzle(pz);
+              }}
+            >
+              <img src={pz.iconUrl} alt={pz.pokemonName} className="wild-chip-img" />
+              <div className="wild-chip-info">
+                <strong className="wild-chip-name">{pz.pokemonName}</strong>
+                <span className="wild-chip-type">{pz.type}</span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -95,28 +129,31 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
       <div className="ambient-world-npcs-bar font-poke">
         <span className="ambient-title">World NPCs Around Town:</span>
         <div className="ambient-npc-list">
-          {AMBIENT_WORLD_NPCS.map((npc) => (
-            <div
-              key={npc.id}
-              className="ambient-npc-card"
-              onClick={() => speakText(`${npc.name} says: ${npc.dialogue}`)}
-              title="Tap to talk"
-            >
-              <img src={npc.iconUrl} alt={npc.name} className="ambient-npc-img" />
-              <div className="ambient-npc-info">
-                <strong className="ambient-npc-name">{npc.name}</strong>
-                <span className="ambient-npc-action">{npc.action}</span>
+          {AMBIENT_WORLD_NPCS.map((npc) => {
+            const ambientDiagFormatted = formatText(npc.dialogue);
+            return (
+              <div
+                key={npc.id}
+                className="ambient-npc-card"
+                onClick={() => speakText(`${npc.name} says: ${ambientDiagFormatted}`)}
+                title="Tap to talk"
+              >
+                <img src={npc.iconUrl} alt={npc.name} className="ambient-npc-img" />
+                <div className="ambient-npc-info">
+                  <strong className="ambient-npc-name">{npc.name}</strong>
+                  <span className="ambient-npc-action">{npc.action}</span>
+                </div>
+                <span className="ambient-audio-icon">🔊</span>
               </div>
-              <span className="ambient-audio-icon">🔊</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Locked Tier Indicator Bar */}
       <div className="tier-selector-bar">
         <span className="tier-label font-poke">
-          Campaign Tier: {currentTierObj.icon} {currentTierObj.name} (🔒 Locked for {profile?.handle})
+          Campaign Tier: {currentTierObj.icon} {currentTierObj.name} (🔒 Locked for {trainerName})
         </span>
         <span className="tier-desc-text">{currentTierObj.desc}</span>
       </div>
@@ -156,11 +193,11 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
               {/* Dialogue Box with Read Aloud Button */}
               <div className="opponent-dialogue-box font-poke">
                 <div className="dialogue-header-row">
-                  <p className="dialogue-text">"{currentStage.dialogue}"</p>
+                  <p className="dialogue-text">"{currentStageDialogueFormatted}"</p>
                   <button
                     type="button"
                     className="btn-tts-mini"
-                    onClick={() => speakText(`${currentStage.name} says: ${currentStage.dialogue}`)}
+                    onClick={() => speakText(`${currentStage.name} says: ${currentStageDialogueFormatted}`, currentStage.name)}
                     title="Listen to dialogue out loud"
                   >
                     🔊 Listen
