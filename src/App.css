@@ -2092,6 +2092,94 @@ body {
   color: var(--text-muted);
 }
 
+.npc-mentor-banner {
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid var(--accent-gold);
+  border-radius: 16px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.npc-avatar-box {
+  width: 52px;
+  height: 52px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.npc-mentor-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.npc-dialogue-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.npc-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.npc-name {
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+}
+
+.npc-quote-text {
+  font-size: 0.78rem;
+  color: #ffffff;
+  font-style: italic;
+}
+
+.btn-tts-speaker {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.btn-tts-speaker:hover {
+  transform: scale(1.05);
+}
+
+.btn-tts-mini {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #10b981;
+  color: #34d399;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.dialogue-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { getStagesForTier, DIFFICULTY_TIERS } from '../game/storyCampaign';
+import { getStagesForTier, DIFFICULTY_TIERS, MOTIVATING_NPCS } from '../game/storyCampaign';
 import { AVATAR_OPTIONS, getTrainerRankTitle } from '../game/profileStorage';
+import { speakText } from '../game/speechAudio';
 
 export default function StoryMap({ profile, onSelectStage, onBackToHome, onChangeProfile }) {
   const [selectedStageId, setSelectedStageId] = useState(profile?.unlockedStage || 1);
@@ -15,16 +16,21 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
 
   const isUnlocked = currentStage.id <= (profile?.unlockedStage || 1);
   const currentTierObj = DIFFICULTY_TIERS[activeTierId] || DIFFICULTY_TIERS.rookie;
+  const activeNpc = MOTIVATING_NPCS[(selectedStageId - 1) % MOTIVATING_NPCS.length];
 
   const handlePrev = () => {
     if (currentStageIndex > 0) {
-      setSelectedStageId(activeStages[currentStageIndex - 1].id);
+      const prevSt = activeStages[currentStageIndex - 1];
+      setSelectedStageId(prevSt.id);
+      speakText(`${prevSt.name}. ${prevSt.dialogue}`);
     }
   };
 
   const handleNext = () => {
     if (currentStageIndex < activeStages.length - 1) {
-      setSelectedStageId(activeStages[currentStageIndex + 1].id);
+      const nextSt = activeStages[currentStageIndex + 1];
+      setSelectedStageId(nextSt.id);
+      speakText(`${nextSt.name}. ${nextSt.dialogue}`);
     }
   };
 
@@ -64,14 +70,33 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
         </div>
       </header>
 
+      {/* Motivating NPC Mentor Banner */}
+      <div className="npc-mentor-banner font-poke">
+        <div className="npc-avatar-box">
+          <img src={activeNpc.iconUrl} alt={activeNpc.name} className="npc-mentor-img" />
+        </div>
+        <div className="npc-dialogue-content">
+          <div className="npc-header-row">
+            <strong className="npc-name">{activeNpc.name}:</strong>
+            <button
+              type="button"
+              className="btn-tts-speaker"
+              onClick={() => speakText(`${activeNpc.name} says: ${activeNpc.quote}`)}
+              title="Listen aloud"
+            >
+              🔊 Read Aloud
+            </button>
+          </div>
+          <p className="npc-quote-text">"{activeNpc.quote}"</p>
+        </div>
+      </div>
+
       {/* Locked Tier Indicator Bar */}
       <div className="tier-selector-bar">
         <span className="tier-label font-poke">
           Campaign Tier: {currentTierObj.icon} {currentTierObj.name} (🔒 Locked for {profile?.handle})
         </span>
-        <span className="tier-desc-text">
-          {currentTierObj.desc}
-        </span>
+        <span className="tier-desc-text">{currentTierObj.desc}</span>
       </div>
 
       {/* Main Switch Console Screen */}
@@ -106,9 +131,19 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
               <h2 className="opponent-name font-poke">{currentStage.name}</h2>
               <h4 className="opponent-title">{currentStage.trainerTitle}</h4>
 
-              {/* Dialogue Box */}
+              {/* Dialogue Box with Read Aloud Button */}
               <div className="opponent-dialogue-box font-poke">
-                <p>"{currentStage.dialogue}"</p>
+                <div className="dialogue-header-row">
+                  <p className="dialogue-text">"{currentStage.dialogue}"</p>
+                  <button
+                    type="button"
+                    className="btn-tts-mini"
+                    onClick={() => speakText(`${currentStage.name} says: ${currentStage.dialogue}`)}
+                    title="Listen to dialogue out loud"
+                  >
+                    🔊 Listen
+                  </button>
+                </div>
               </div>
 
               {/* Reward & Features Badges */}
@@ -132,7 +167,10 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
             {isUnlocked ? (
               <button
                 className="btn-battle-start font-poke"
-                onClick={() => onSelectStage(currentStage)}
+                onClick={() => {
+                  speakText(`Battle against ${currentStage.name}!`);
+                  onSelectStage(currentStage);
+                }}
               >
                 [A] BATTLE OPPONENT! ►
               </button>
@@ -165,7 +203,10 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
               className={`grid-stage-dot ${st.id === selectedStageId ? 'active' : ''} ${
                 unlocked ? 'unlocked' : 'locked'
               }`}
-              onClick={() => setSelectedStageId(st.id)}
+              onClick={() => {
+                setSelectedStageId(st.id);
+                speakText(`Stage ${st.id}: ${st.name}`);
+              }}
             >
               {unlocked ? st.id : '🔒'}
             </button>
