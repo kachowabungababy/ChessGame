@@ -5,11 +5,15 @@ import { soundEffects } from './game/audio';
 import { ARENA_THEMES } from './game/themes';
 import { getStoredProfile, createProfile, recordMatchResult, recordCaughtPokemon, saveProfile, AVATAR_OPTIONS } from './game/profileStorage';
 import { getLineupForStage } from './game/pokemonLineups';
+import { WILD_POKEMON_PUZZLES } from './game/wildPuzzles';
+import { subscribeLobbyGame, pushLobbyMove } from './game/lobbyStore';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
 import MoveList from './components/MoveList';
 import BattleScreen from './components/BattleScreen';
 import GameHistory from './components/GameHistory';
+import MatchHistoryModal from './components/MatchHistoryModal';
+import OnlineLobbyScreen from './components/OnlineLobbyScreen';
 import CapturedPiecesTray, { computeGameStats } from './components/CapturedPiecesBar';
 import TrainerLoginModal from './components/TrainerLoginModal';
 import StoryMap from './components/StoryMap';
@@ -31,14 +35,22 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(() => !getStoredProfile());
 
   // Pre-Match Configuration State
-  const [view, setView] = useState('home'); // 'home' | 'story' | 'game'
-  const [gameMode, setGameMode] = useState('ai'); // '2p' | 'ai'
+  const [view, setView] = useState('home'); // 'home' | 'story' | 'lobby' | 'game'
+  const [gameMode, setGameMode] = useState('ai'); // '2p' | 'ai' | 'lobby'
   const [playerColor, setPlayerColor] = useState('w'); // 'w' | 'b'
   const [aiElo, setAiElo] = useState(1200); // 50 to 2400
   const [showMoveHighlights, setShowMoveHighlights] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
   const [theme, setTheme] = useState('classic');
   const [activeStoryStage, setActiveStoryStage] = useState(null);
+
+  // Online Lobby State (live 2-player games via Supabase Realtime)
+  const [lobbyGameId, setLobbyGameId] = useState(null);
+  const [lobbyOpponentHandle, setLobbyOpponentHandle] = useState(null);
+  const [lobbyOpponentEloSnapshot, setLobbyOpponentEloSnapshot] = useState(null);
+
+  // Match History Modal
+  const [showMatchHistoryModal, setShowMatchHistoryModal] = useState(false);
 
   // Live Game State
   const engine = useMemo(() => new ChessGameEngine(), []);
@@ -158,7 +170,15 @@ export default function App() {
     // Auto-save on Game Over
     if (engine.isGameOver() && !hasSavedCurrentMatch) {
       const winner = engine.getWinner();
-      saveMatch(engine, winner);
+      const mode = activeStoryStage ? 'story' : gameMode; // 'ai' | '2p' | 'story' | 'lobby'
+      const showsElo = mode !== '2p';
+      const trainerEloBefore = profile?.trainerElo ?? null;
+      const opponentEloForRecord = activeStoryStage
+        ? activeStoryStage.elo
+        : mode === 'lobby'
+        ? lobbyOpponentEloSnapshot ?? 1200
+        : aiElo;
+      let trainerEloAfter = trainerEloBefore;
 
       // Record profile progress & unlock badges
       if (profile) {
@@ -167,7 +187,8 @@ export default function App() {
           (winner === 'black' && playerColor === 'b');
         const isDraw = winner === 'draw';
         const oldUnlocked = profile.unlockedStage || 1;
-        const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage, aiElo);
+        const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage, opponentEloForRecord);
+        trainerEloAfter = updated.trainerElo;
         setProfile(updated);
 
         // Evolution animation check for Starter Partner Pawn
@@ -185,9 +206,51 @@ export default function App() {
           }
         }
       }
+
+      saveMatch(engine, winner, {
+        mode,
+        handle: profile?.handle,
+        playerColor,
+        trainerEloBefore: showsElo ? trainerEloBefore : null,
+        trainerEloAfter: showsElo ? trainerEloAfter : null,
+        opponentElo: showsElo ? opponentEloForRecord : null,
+        opponentHandle: mode === 'lobby' ? lobbyOpponentHandle : null,
+        storyStageId: activeStoryStage?.id ?? null,
+        storyStageName: activeStoryStage?.name ?? null,
+      });
+
       setHasSavedCurrentMatch(true);
     }
-  }, [engine, hasSavedCurrentMatch, profile, playerColor, activeStoryStage, aiElo]);
+  }, [
+    engine,
+    hasSavedCurrentMatch,
+    profile,
+    playerColor,
+    activeStoryStage,
+    aiElo,
+    gameMode,
+    lobbyOpponentEloSnapshot,
+    lobbyOpponentHandle,
+  ]);
+
+  // Pushes a locally-made move to the shared Supabase row for live Online Lobby games.
+  // Only call this alongside a LOCAL player's move (never for moves applied from a
+  // remote realtime update, to avoid redundant echo writes).
+  const applyLocalMove = useCallback(
+    (move) => {
+      applyGameStateUpdate(move);
+      if (gameMode === 'lobby' && lobbyGameId) {
+        const isOver = engine.isGameOver();
+        pushLobbyMove(lobbyGameId, {
+          moves: engine.getHistory(),
+          turn: engine.getTurn(),
+          status: isOver ? 'finished' : 'active',
+          winner: isOver ? engine.getWinner() : null,
+        });
+      }
+    },
+    [applyGameStateUpdate, gameMode, lobbyGameId, engine]
+  );
 
   // AI Turn Logic Effect
   useEffect(() => {
@@ -243,7 +306,7 @@ export default function App() {
             isCheckmate: engine.chess.isCheckmate(),
           });
         } else {
-          applyGameStateUpdate(result.move);
+          applyLocalMove(result.move);
         }
       }
       setPendingPromotionMove(null);
@@ -256,6 +319,7 @@ export default function App() {
 
     const currentTurn = engine.getTurn();
     if (gameMode === 'ai' && currentTurn !== playerColor) return;
+    if (gameMode === 'lobby' && currentTurn !== playerColor) return;
 
     const col = squareName.charCodeAt(0) - 97;
     const row = 8 - parseInt(squareName[1], 10);
@@ -270,6 +334,8 @@ export default function App() {
 
       if (possibleMoves.includes(squareName)) {
         if (engine.isPromotionMove(selectedSquare, squareName)) {
+          setSelectedSquare(null);
+          setPossibleMoves([]);
           setPendingPromotionMove({ from: selectedSquare, to: squareName });
           return;
         }
@@ -288,7 +354,7 @@ export default function App() {
               isCheckmate: engine.chess.isCheckmate(),
             });
           } else {
-            applyGameStateUpdate(result.move);
+            applyLocalMove(result.move);
           }
           return;
         }
@@ -312,11 +378,11 @@ export default function App() {
 
   const handleBattleComplete = useCallback(() => {
     if (pendingMove) {
-      applyGameStateUpdate(pendingMove);
+      applyLocalMove(pendingMove);
       setPendingMove(null);
     }
     setActiveCapture(null);
-  }, [pendingMove, applyGameStateUpdate]);
+  }, [pendingMove, applyLocalMove]);
 
   const handleResetGame = () => {
     try {
@@ -344,6 +410,54 @@ export default function App() {
       }
     }
   };
+
+  const handleLeaveGameToHome = () => {
+    if (gameMode === 'lobby') setGameMode('ai');
+    setLobbyGameId(null);
+    setLobbyOpponentHandle(null);
+    setLobbyOpponentEloSnapshot(null);
+    setView('home');
+  };
+
+  const handleGameReadyFromLobby = ({ code, color, opponentHandle, opponentElo }) => {
+    setActiveStoryStage(null);
+    setGameMode('lobby');
+    setPlayerColor(color);
+    setLobbyGameId(code);
+    setLobbyOpponentHandle(opponentHandle || null);
+    setLobbyOpponentEloSnapshot(typeof opponentElo === 'number' ? opponentElo : 1200);
+    handleResetGame();
+    setView('game');
+  };
+
+  // Live sync for Online Lobby games: apply moves the opponent makes on their client.
+  useEffect(() => {
+    if (view !== 'game' || gameMode !== 'lobby' || !lobbyGameId) return undefined;
+
+    const unsubscribe = subscribeLobbyGame(lobbyGameId, (row) => {
+      if (!row || !Array.isArray(row.moves)) return;
+      const localLen = engine.getHistory().length;
+      if (row.moves.length <= localLen) return; // own echo or stale event
+
+      let lastMove = null;
+      for (let i = localLen; i < row.moves.length; i++) {
+        const san = row.moves[i];
+        try {
+          const m = engine.chess.move(san);
+          if (m) lastMove = { from: m.from, to: m.to };
+        } catch (e) {
+          console.error('Failed to apply remote lobby move:', san, e);
+          break;
+        }
+      }
+      if (lastMove) {
+        soundEffects.playMoveSound();
+        applyGameStateUpdate(lastMove);
+      }
+    });
+
+    return unsubscribe;
+  }, [view, gameMode, lobbyGameId, engine, applyGameStateUpdate]);
 
   const handleStartGame = ({
     mode,
@@ -409,6 +523,21 @@ export default function App() {
     }
   };
 
+  const handleBirthdayNpcTalk = () => {
+    if (!hasCheckedBirthdayInStory) {
+      setShowBirthdayCheck(true);
+    } else if (isBirthday) {
+      setShowBirthdaySurprise(true);
+    }
+  };
+
+  const handleWildEncounter = (region) => {
+    const candidates = WILD_POKEMON_PUZZLES.filter((p) => p.region === region);
+    if (candidates.length === 0) return;
+    const puzzle = candidates[Math.floor(Math.random() * candidates.length)];
+    setActiveWildPuzzle(puzzle);
+  };
+
   const handleSelectStarter = (starterId) => {
     if (profile) {
       const updated = { ...profile, starterLineId: starterId };
@@ -416,6 +545,16 @@ export default function App() {
       saveProfile(updated);
     }
     setShowStarterModal(false);
+  };
+
+  const handleTogglePieceStyle = () => {
+    if (!profile) return;
+    const updated = {
+      ...profile,
+      pieceStyle: profile.pieceStyle === 'classic' ? 'pokemon' : 'classic',
+    };
+    setProfile(updated);
+    saveProfile(updated);
   };
 
   const activeAvatar = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
@@ -428,11 +567,14 @@ export default function App() {
     ? `${statusMessage} — ${activeStoryStage.name} (${activeStoryStage.elo} ELO)`
     : gameMode === 'ai'
     ? `${statusMessage} (vs AI ${aiElo} ELO)`
+    : gameMode === 'lobby'
+    ? `${statusMessage} (Online vs ${lobbyOpponentHandle || '...'})`
     : statusMessage;
 
   const [evolutionEvent, setEvolutionEvent] = useState(null);
 
   // View Renders
+  const mainContent = (() => {
   if (showLoginModal) {
     return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
   }
@@ -442,6 +584,33 @@ export default function App() {
       <StarterSelectionModal
         trainerName={profile?.handle || 'Trainer'}
         onSelectStarter={handleSelectStarter}
+      />
+    );
+  }
+
+  if (showBirthdayCheck) {
+    return (
+      <BirthdayCheckModal
+        trainerName={profile?.handle || 'Trainer'}
+        onAnswerBirthday={handleAnswerBirthday}
+      />
+    );
+  }
+
+  if (showLadyEscort) {
+    return (
+      <LadyEscortOverlay
+        trainerName={profile?.handle || 'Trainer'}
+        onArriveAtLab={handleArriveAtLab}
+      />
+    );
+  }
+
+  if (showBirthdaySurprise) {
+    return (
+      <BirthdaySurpriseModal
+        trainerName={profile?.handle || 'Trainer'}
+        onComplete={() => setShowBirthdaySurprise(false)}
       />
     );
   }
@@ -473,49 +642,24 @@ export default function App() {
     );
   }
 
+  if (view === 'lobby') {
+    return (
+      <OnlineLobbyScreen
+        profile={profile}
+        onGameReady={handleGameReadyFromLobby}
+        onBack={() => setView('home')}
+      />
+    );
+  }
+
   if (view === 'story') {
-    // Trigger Birthday Check ONCE when entering Story Mode for the first time
-    if (!hasCheckedBirthdayInStory && !showBirthdayCheck && !showLadyEscort && !showBirthdaySurprise) {
-      setShowBirthdayCheck(true);
-    }
-
-    if (showBirthdayCheck) {
-      return (
-        <BirthdayCheckModal
-          trainerName={profile?.handle || 'Trainer'}
-          onAnswerBirthday={handleAnswerBirthday}
-        />
-      );
-    }
-
-    if (showLadyEscort) {
-      return (
-        <LadyEscortOverlay
-          trainerName={profile?.handle || 'Trainer'}
-          onArriveAtLab={handleArriveAtLab}
-        />
-      );
-    }
-
-    if (showBirthdaySurprise) {
-      return (
-        <BirthdaySurpriseModal
-          trainerName={profile?.handle || 'Trainer'}
-          onComplete={() => {
-            setShowBirthdaySurprise(false);
-            if (!profile?.starterLineId) {
-              setShowStarterModal(true);
-            }
-          }}
-        />
-      );
-    }
-
     if (useGBAMapView) {
       return (
         <GBATileMap
           profile={profile}
           onInteractPokeball={() => setShowStarterModal(true)}
+          onWildEncounter={handleWildEncounter}
+          onBirthdayNpcTalk={handleBirthdayNpcTalk}
           onProfileUpdate={setProfile}
           onBackToMenu={() => setView('home')}
         />
@@ -553,6 +697,20 @@ export default function App() {
           </div>
 
           <button
+            className="btn-match-history font-poke"
+            onClick={() => setShowMatchHistoryModal(true)}
+          >
+            📜 Match History
+          </button>
+
+          <button
+            className="btn-story-mode-launch font-poke"
+            onClick={() => setView('lobby')}
+          >
+            🌐 ONLINE LOBBY ►
+          </button>
+
+          <button
             className="btn-story-mode-launch font-poke"
             onClick={() => setView('story')}
           >
@@ -568,6 +726,8 @@ export default function App() {
           initialShowMoves={showMoveHighlights}
           initialShowTooltips={showTooltips}
           initialTheme={theme}
+          pieceStyle={profile?.pieceStyle || 'pokemon'}
+          onTogglePieceStyle={handleTogglePieceStyle}
         />
       </div>
     );
@@ -587,7 +747,7 @@ export default function App() {
 
       <header className="app-header">
         <div className="nav-bar-top">
-          <button className="btn-home-nav font-poke" onClick={() => setView('home')}>
+          <button className="btn-home-nav font-poke" onClick={handleLeaveGameToHome}>
             ◄ Main Menu
           </button>
 
@@ -596,6 +756,14 @@ export default function App() {
               🎮 Campaign Map
             </button>
           )}
+
+          <button
+            className="btn-match-history-mini"
+            onClick={() => setShowMatchHistoryModal(true)}
+            title="Match History"
+          >
+            📜
+          </button>
 
           <div className="trainer-chip-badge mini" onClick={() => setShowLoginModal(true)}>
             <img src={activeAvatar.url} alt={profile?.handle} className="trainer-chip-img" />
@@ -610,6 +778,8 @@ export default function App() {
             ? `${activeStoryStage.trainerTitle} (${activeStoryStage.elo} ELO)`
             : gameMode === 'ai'
             ? `vs AI (${aiElo} ELO) • Playing as ${playerColor === 'w' ? 'White' : 'Black'}`
+            : gameMode === 'lobby'
+            ? `Online vs ${lobbyOpponentHandle || '...'} • Playing as ${playerColor === 'w' ? 'White' : 'Black'}`
             : '2 Player Pass & Play'}
         </p>
 
@@ -685,10 +855,18 @@ export default function App() {
             inCheckSquare={inCheckSquare}
             showMoveHighlights={showMoveHighlights}
             showTooltips={showTooltips}
+            pieceStyle={profile?.pieceStyle || 'pokemon'}
             onSquareClick={handleSquareClick}
             disabled={!!replayMatch}
-            flipped={gameMode === 'ai' && playerColor === 'b'}
+            flipped={(gameMode === 'ai' || gameMode === 'lobby') && playerColor === 'b'}
           />
+
+          {pendingPromotionMove && (
+            <PromotionModal
+              playerColor={engine.getTurn()}
+              onSelectPromotion={handleSelectPromotion}
+            />
+          )}
 
           {/* Replay Controls / Game Controls */}
           {replayMatch ? (
@@ -740,6 +918,10 @@ export default function App() {
                 Exit Replay ✖
               </button>
             </div>
+          ) : gameMode === 'lobby' ? (
+            <div className="controls-bar">
+              <p className="lobby-live-note">🌐 Live Online Match — use Main Menu to leave</p>
+            </div>
           ) : (
             <div className="controls-bar">
               <button className="btn btn-restart font-poke" onClick={handleResetGame}>
@@ -762,5 +944,24 @@ export default function App() {
         </aside>
       </main>
     </div>
+  );
+  })();
+
+  return (
+    <>
+      {mainContent}
+      {showMatchHistoryModal && (
+        <MatchHistoryModal
+          profile={profile}
+          onClose={() => setShowMatchHistoryModal(false)}
+          onSelectReplay={(match) => {
+            setReplayMatch(match);
+            setReplayMoveIndex(0);
+            setShowMatchHistoryModal(false);
+            if (view !== 'game') setView('game');
+          }}
+        />
+      )}
+    </>
   );
 }

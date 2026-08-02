@@ -1,6 +1,7 @@
 import { TILE, WALK_MS, TURN_MS, DIRS, tileToPx } from './worldConstants';
 import { soundEffects } from '../audio';
 import { worldEvents } from './worldEvents';
+import { DEFAULT_MAP_ID } from './mapRegistry';
 
 export class PlayerController {
   constructor(scene, sprite, tileX, tileY, facing = 'down', followerController = null, mapData = null) {
@@ -107,7 +108,7 @@ export class PlayerController {
 
         // Emit move event for persistence
         worldEvents.emit('player:moved', {
-          mapId: this.mapData?.id || 'littleroot_town',
+          mapId: this.mapData?.id || DEFAULT_MAP_ID,
           x: this.tileX,
           y: this.tileY,
           facing: this.facing,

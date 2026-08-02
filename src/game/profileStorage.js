@@ -1,12 +1,14 @@
 import { supabase } from './supabaseClient';
+import { DEFAULT_MAP_ID, MAPS } from './world/mapRegistry';
 
 // Profile Storage System for Unique Trainer Handles, Avatars & World Position Migration
 
 const STORAGE_KEY = 'poke_chess_trainer_profile';
 const BACKUP_KEY_V0 = 'poke_chess_trainer_profile_bak_v0';
 
-export const CURRENT_SCHEMA_VERSION = 1;
-export const DEFAULT_WORLD = { mapId: 'littleroot_town', x: 6, y: 14, facing: 'down' };
+export const CURRENT_SCHEMA_VERSION = 2;
+const defaultMapSpawn = MAPS[DEFAULT_MAP_ID].defaultSpawn;
+export const DEFAULT_WORLD = { mapId: DEFAULT_MAP_ID, ...defaultMapSpawn };
 
 export const AVATAR_OPTIONS = [
   // Boys
@@ -64,6 +66,11 @@ function migrateProfile(raw, rawStr) {
     p.schemaVersion = 1;
   }
 
+  if (oldVersion < 2) {
+    if (p.pieceStyle !== 'classic' && p.pieceStyle !== 'pokemon') p.pieceStyle = 'pokemon';
+    p.schemaVersion = 2;
+  }
+
   return p;
 }
 
@@ -96,6 +103,7 @@ export function createProfile(handle, avatarId = 'ash', remember = true, passwor
     avatarId,
     rememberMe: remember,
     difficultyTier: 'rookie',
+    pieceStyle: 'pokemon',
     trainerElo: 50,
     unlockedStage: 1,
     badges: [],

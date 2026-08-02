@@ -16,12 +16,13 @@ const PIECE_NAMES = {
   k: 'King',
 };
 
-export default function Piece({ type, color, showTooltip = true }) {
+export default function Piece({ type, color, showTooltip = true, pieceStyle = 'pokemon' }) {
   const [spriteUrl, setSpriteUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const pokemonName = ROSTER[color]?.[type];
+  const isClassic = pieceStyle === 'classic';
+  const pokemonName = !isClassic ? ROSTER[color]?.[type] : null;
 
   useEffect(() => {
     let isMounted = true;
@@ -62,7 +63,7 @@ export default function Piece({ type, color, showTooltip = true }) {
   return (
     <div className={`chess-piece-container piece-${color} piece-${type}`}>
       {showTooltip && <span className="piece-hover-tooltip">{fullLabel}</span>}
-      {spriteUrl && !error ? (
+      {!isClassic && spriteUrl && !error ? (
         <img
           src={spriteUrl}
           alt={fullLabel}

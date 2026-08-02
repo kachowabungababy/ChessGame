@@ -3,12 +3,19 @@ import { createPhaserGame } from '../game/world/createPhaserGame';
 import { worldEvents } from '../game/world/worldEvents';
 import { speakText } from '../game/speechAudio';
 
-export default function GBATileMap({ profile, onInteractPokeball, onBackToMenu, onProfileUpdate }) {
+export default function GBATileMap({
+  profile,
+  onInteractPokeball,
+  onWildEncounter,
+  onBirthdayNpcTalk,
+  onBackToMenu,
+  onProfileUpdate,
+}) {
   const containerRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);
-  const [dialogue, setDialogue] = useState('Welcome to Littleroot Town! Walk over to Professor Birch\'s Lab!');
-  const [mapTitle, setMapTitle] = useState('LITTLEROOT TOWN — HOENN');
+  const [dialogue, setDialogue] = useState('Welcome to Sunroot Town! Walk over to the Pokéball Table to choose your team!');
+  const [mapTitle, setMapTitle] = useState('SUNROOT TOWN');
 
   // Mount/destroy Phaser — StrictMode-safe lifecycle
   useEffect(() => {
@@ -25,7 +32,7 @@ export default function GBATileMap({ profile, onInteractPokeball, onBackToMenu, 
       // Capture scene reference when ready
       const unsubReady = worldEvents.on('world:ready', (data) => {
         if (cancelled) return;
-        setMapTitle(`${data.displayName} — HOENN`);
+        setMapTitle(data.displayName);
         if (gameRef.current) {
           sceneRef.current = gameRef.current.scene.getScene('OverworldScene');
         }
@@ -47,6 +54,17 @@ export default function GBATileMap({ profile, onInteractPokeball, onBackToMenu, 
           if (onInteractPokeball) {
             onInteractPokeball();
           }
+        } else if (data.triggerId === 'mom_birthday_check') {
+          if (onBirthdayNpcTalk) {
+            onBirthdayNpcTalk();
+          }
+        }
+      });
+
+      const unsubEncounter = worldEvents.on('encounter:wild', (data) => {
+        if (cancelled) return;
+        if (onWildEncounter) {
+          onWildEncounter(data.region);
         }
       });
 
@@ -54,6 +72,7 @@ export default function GBATileMap({ profile, onInteractPokeball, onBackToMenu, 
         unsubReady();
         unsubDialogue();
         unsubTrigger();
+        unsubEncounter();
       };
     })();
 

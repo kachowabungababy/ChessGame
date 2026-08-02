@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { OW_POKEMON } from '../overworldSprites';
 
 export class BootScene extends Phaser.Scene {
@@ -6,12 +7,11 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load tilesets
-    this.load.image('ts_general', '/assets/tilesets/hoenn_general.png');
-    this.load.image('ts_littleroot', '/assets/tilesets/hoenn_littleroot.png');
+    // Load tileset
+    this.load.image('ts_town_outdoor', '/assets/tilesets/town_outdoor.png');
 
     // Load map json
-    this.load.tilemapTiledJSON('littleroot_town', '/assets/maps/littleroot_town.json');
+    this.load.tilemapTiledJSON('sunroot_town', '/assets/maps/sunroot_town.json');
 
     // Load character spritesheets (144x32: 16x32 frames)
     this.load.spritesheet('brendan_sheet', '/assets/sprites/characters/brendan_walk.png', { frameWidth: 16, frameHeight: 32 });

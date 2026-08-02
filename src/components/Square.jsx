@@ -11,6 +11,7 @@ export default function Square({
   piece,
   showMoveHighlight = true,
   showTooltip = true,
+  pieceStyle = 'pokemon',
   onClick,
 }) {
   return (
@@ -24,7 +25,9 @@ export default function Square({
       {showMoveHighlight && isPossibleMove && (
         <div className={`move-dot ${piece ? 'capture-ring' : ''}`} />
       )}
-      {piece && <Piece type={piece.type} color={piece.color} showTooltip={showTooltip} />}
+      {piece && (
+        <Piece type={piece.type} color={piece.color} showTooltip={showTooltip} pieceStyle={pieceStyle} />
+      )}
       <span className="square-label">{squareName}</span>
     </div>
   );

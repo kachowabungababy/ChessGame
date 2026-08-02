@@ -9,6 +9,7 @@ export default function Board({
   inCheckSquare = null,
   showMoveHighlights = true,
   showTooltips = true,
+  pieceStyle = 'pokemon',
   onSquareClick,
   disabled = false,
   flipped = false,
@@ -45,6 +46,7 @@ export default function Board({
                   piece={cell}
                   showMoveHighlight={showMoveHighlights}
                   showTooltip={showTooltips}
+                  pieceStyle={pieceStyle}
                   onClick={(sq) => !disabled && onSquareClick(sq)}
                 />
               );

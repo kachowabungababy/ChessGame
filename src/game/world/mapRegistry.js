@@ -7,21 +7,20 @@
 // Object layer "spawns": named arrival points { spawnId, facing }
 
 export const MAPS = {
-  littleroot_town: {
-    id: 'littleroot_town',
-    displayName: 'LITTLEROOT TOWN',
-    tilemapUrl: '/assets/maps/littleroot_town.json',
+  sunroot_town: {
+    id: 'sunroot_town',
+    displayName: 'SUNROOT TOWN',
+    tilemapUrl: '/assets/maps/sunroot_town.json',
     tilesets: [
-      { tiledName: 'hoenn_general', key: 'ts_general', url: '/assets/tilesets/hoenn_general.png' },
-      { tiledName: 'hoenn_littleroot', key: 'ts_littleroot', url: '/assets/tilesets/hoenn_littleroot.png' },
+      { tiledName: 'town_outdoor', key: 'ts_town_outdoor', url: '/assets/tilesets/town_outdoor.png' },
     ],
-    music: 'littleroot',
-    defaultSpawn: { x: 6, y: 14, facing: 'down' },
+    music: 'sunroot',
+    defaultSpawn: { x: 12, y: 20, facing: 'up' },
     minStage: 1,
   },
 };
 
-export const DEFAULT_MAP_ID = 'littleroot_town';
+export const DEFAULT_MAP_ID = 'sunroot_town';
 
 export function getMapDef(mapId) {
   return MAPS[mapId] ?? MAPS[DEFAULT_MAP_ID];

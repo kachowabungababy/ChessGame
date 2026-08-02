@@ -1,5 +1,6 @@
+import Phaser from 'phaser';
 import { TILE, tileToPx, DIRS } from '../worldConstants';
-import { getMapDef, isMapUnlocked } from '../mapRegistry';
+import { getMapDef } from '../mapRegistry';
 import { PlayerController } from '../PlayerController';
 import { FollowerController } from '../FollowerController';
 import { resolveFollowerSpecies, OW_POKEMON } from '../overworldSprites';
@@ -26,11 +27,12 @@ export class OverworldScene extends Phaser.Scene {
     const spawnData = getWorldSpawn(this.profile);
     const mapDef = getMapDef(spawnData.mapId);
 
+    this.mapDef = mapDef;
+
     // Create Tilemap
     this.map = this.make.tilemap({ key: mapDef.id });
-    const tsGeneral = this.map.addTilesetImage('hoenn_general', 'ts_general');
-    const tsLittleroot = this.map.addTilesetImage('hoenn_littleroot', 'ts_littleroot');
-    const tilesets = [tsGeneral, tsLittleroot];
+    const tsTownOutdoor = this.map.addTilesetImage('town_outdoor', 'ts_town_outdoor');
+    const tilesets = [tsTownOutdoor];
 
     // 4 Tile Layers per Contract
     this.groundLayer = this.map.createLayer('ground', tilesets, 0, 0);
@@ -147,11 +149,9 @@ export class OverworldScene extends Phaser.Scene {
     // Check interact triggers on tile in front
     const triggered = this.checkInteractTriggers(frontX, frontY);
     if (!triggered) {
-      worldEvents.emit('dialogue:show', {
-        text: `Exploring Littleroot Town! Position: (${tileX}, ${tileY})`,
-        speaker: 'oak',
-      });
-      speakText(`Exploring Littleroot Town! Position: (${tileX}, ${tileY})`, 'oak');
+      const text = `Exploring ${this.mapDef?.displayName || 'the town'}! Position: (${tileX}, ${tileY})`;
+      worldEvents.emit('dialogue:show', { text, speaker: 'oak' });
+      speakText(text, 'oak');
     }
   }
 
@@ -196,6 +196,19 @@ export class OverworldScene extends Phaser.Scene {
   parseObjectLayers() {
     this.warps = [];
     this.triggers = [];
+    this.encounters = [];
+
+    const encounterObjects = this.map.getObjectLayer('encounters')?.objects || [];
+    encounterObjects.forEach((obj) => {
+      const getProp = (name) => obj.properties?.find((p) => p.name === name)?.value;
+      this.encounters.push({
+        x: Math.floor(obj.x / TILE),
+        y: Math.floor(obj.y / TILE),
+        w: Math.floor(obj.width / TILE),
+        h: Math.floor(obj.height / TILE),
+        region: getProp('region') || 'petalburg',
+      });
+    });
 
     const warpObjects = this.map.getObjectLayer('warps')?.objects || [];
     warpObjects.forEach((obj) => {
@@ -206,6 +219,8 @@ export class OverworldScene extends Phaser.Scene {
       this.warps.push({
         x: tx,
         y: ty,
+        w: Math.max(1, Math.floor(obj.width / TILE)),
+        h: Math.max(1, Math.floor(obj.height / TILE)),
         targetMapId: getProp('targetMapId') || 'route_101',
         requiresStage: getProp('requiresStage') || 1,
         lockedMessage: getProp('lockedMessage') || 'This route is currently locked!',
@@ -238,15 +253,27 @@ export class OverworldScene extends Phaser.Scene {
 
   checkEnterTriggers(x, y) {
     // Check warp triggers on enter
-    const hitWarp = this.warps.find((w) => w.x === x && w.y === y);
+    const hitWarp = this.warps.find(
+      (w) => x >= w.x && x < w.x + w.w && y >= w.y && y < w.y + w.h
+    );
     if (hitWarp) {
-      if (!isMapUnlocked(hitWarp.targetMapId, this.profile)) {
+      const userStage = this.profile?.unlockedStage ?? 1;
+      if (userStage < hitWarp.requiresStage) {
         worldEvents.emit('dialogue:show', {
           text: hitWarp.lockedMessage,
           speaker: 'oak',
         });
         speakText(hitWarp.lockedMessage, 'oak');
       }
+      return;
+    }
+
+    // Classic "tall grass" wild encounter roll
+    const zone = this.encounters.find(
+      (e) => x >= e.x && x < e.x + e.w && y >= e.y && y < e.y + e.h
+    );
+    if (zone && Math.random() < 0.25) {
+      worldEvents.emit('encounter:wild', { region: zone.region });
     }
   }
 }

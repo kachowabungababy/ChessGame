@@ -48,6 +48,8 @@ export default function HomePage({
   initialShowMoves = true,
   initialShowTooltips = true,
   initialTheme = 'classic',
+  pieceStyle = 'pokemon',
+  onTogglePieceStyle,
 }) {
   const [mode, setMode] = useState(initialMode);
   const [playerColor, setPlayerColor] = useState(initialPlayerColor);
@@ -301,6 +303,22 @@ export default function HomePage({
                 onClick={() => setShowTooltips((prev) => !prev)}
               >
                 {showTooltips ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* Classic Chess Pieces Toggle */}
+            <div className="setting-option-card">
+              <div className="setting-info">
+                <h4>Classic Chess Pieces</h4>
+                <p>Show normal chess piece symbols instead of Pokémon sprites</p>
+              </div>
+              <button
+                type="button"
+                className={`toggle-switch-btn ${pieceStyle === 'classic' ? 'on' : 'off'}`}
+                onClick={onTogglePieceStyle}
+                disabled={!onTogglePieceStyle}
+              >
+                {pieceStyle === 'classic' ? 'ON' : 'OFF'}
               </button>
             </div>
           </div>
