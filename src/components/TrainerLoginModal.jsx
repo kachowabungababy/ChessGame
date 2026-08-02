@@ -3,7 +3,7 @@ import { AVATAR_OPTIONS } from '../game/profileStorage';
 import { speakText } from '../game/speechAudio';
 
 export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
-  const [authMode, setAuthMode] = useState('signup'); // 'signin', 'signup', 'guest'
+  const [authMode, setAuthMode] = useState('signup'); // 'signup', 'signin', 'guest'
   const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'boy', 'girl'
   const [handle, setHandle] = useState(currentProfile?.handle || '');
   const [avatarId, setAvatarId] = useState(currentProfile?.avatarId || 'ash');
@@ -37,20 +37,20 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
     <div className="login-modal-overlay animation-fade">
       <div className="login-modal-card">
         {/* Top Mode Navigation Tabs */}
-        <nav className="auth-mode-tabs font-poke">
+        <nav className="auth-mode-tabs">
           <button
             type="button"
             className={`auth-tab-btn ${authMode === 'signup' ? 'active' : ''}`}
             onClick={() => setAuthMode('signup')}
           >
-            📝 New Game / Sign Up
+            📝 New Game
           </button>
           <button
             type="button"
             className={`auth-tab-btn ${authMode === 'signin' ? 'active' : ''}`}
             onClick={() => setAuthMode('signin')}
           >
-            🔑 Existing Trainer Sign In
+            🔑 Sign In
           </button>
           <button
             type="button"
@@ -61,7 +61,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
           </button>
         </nav>
 
-        {/* Mode 1: Sign Up / New Game (Professor Oak Intro) */}
+        {/* Mode 1: New Game / Sign Up (Professor Oak Intro) */}
         {authMode === 'signup' && (
           <>
             <header className="login-oak-intro-header font-poke">
@@ -99,7 +99,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
               <div className="form-group">
                 <div className="gender-tab-row">
                   <label className="form-label font-poke">1. Are you a Boy or a Girl?</label>
-                  <div className="gender-btn-group font-poke">
+                  <div className="gender-btn-group">
                     <button
                       type="button"
                       className={`btn-gender-filter ${genderFilter === 'all' ? 'active' : ''}`}
@@ -223,7 +223,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
         {/* Mode 3: Play as Guest */}
         {authMode === 'guest' && (
           <div className="login-form guest-box">
-            <h3 className="guest-title font-poke font-poke">👤 PLAY AS GUEST</h3>
+            <h3 className="guest-title font-poke">👤 PLAY AS GUEST</h3>
 
             <div className="guest-warning-box">
               <span className="warning-icon font-poke">⚠️ SAVE WARNING:</span>
