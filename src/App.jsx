@@ -3,23 +3,32 @@ import { ChessGameEngine, createEngine } from './game/chessEngine';
 import { saveMatch } from './game/gameStorage';
 import { soundEffects } from './game/audio';
 import { ARENA_THEMES } from './game/themes';
+import { getStoredProfile, createProfile, recordMatchResult, AVATAR_OPTIONS } from './game/profileStorage';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
 import MoveList from './components/MoveList';
 import BattleScreen from './components/BattleScreen';
 import GameHistory from './components/GameHistory';
 import CapturedPiecesTray, { computeGameStats } from './components/CapturedPiecesBar';
+import TrainerLoginModal from './components/TrainerLoginModal';
+import StoryMap from './components/StoryMap';
+import PikachuCoachBanner from './components/PikachuCoachBanner';
 import './App.css';
 
 export default function App() {
+  // Trainer Profile State
+  const [profile, setProfile] = useState(() => getStoredProfile());
+  const [showLoginModal, setShowLoginModal] = useState(() => !getStoredProfile());
+
   // Pre-Match Configuration State
-  const [view, setView] = useState('home'); // 'home' | 'game'
+  const [view, setView] = useState('home'); // 'home' | 'story' | 'game'
   const [gameMode, setGameMode] = useState('ai'); // '2p' | 'ai'
   const [playerColor, setPlayerColor] = useState('w'); // 'w' | 'b'
-  const [aiElo, setAiElo] = useState(1200); // 400 to 2400
+  const [aiElo, setAiElo] = useState(1200); // 50 to 2400
   const [showMoveHighlights, setShowMoveHighlights] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
   const [theme, setTheme] = useState('classic');
+  const [activeStoryStage, setActiveStoryStage] = useState(null);
 
   // Live Game State
   const engine = useMemo(() => new ChessGameEngine(), []);
@@ -140,11 +149,21 @@ export default function App() {
     if (engine.isGameOver() && !hasSavedCurrentMatch) {
       const winner = engine.getWinner();
       saveMatch(engine, winner);
+
+      // Record profile progress & unlock badges
+      if (profile) {
+        const isWin =
+          (winner === 'white' && playerColor === 'w') ||
+          (winner === 'black' && playerColor === 'b');
+        const isDraw = winner === 'draw';
+        const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage);
+        setProfile(updated);
+      }
       setHasSavedCurrentMatch(true);
     }
-  }, [engine, hasSavedCurrentMatch]);
+  }, [engine, hasSavedCurrentMatch, profile, playerColor, activeStoryStage]);
 
-  // AI Turn Logic Effect with pre-set ELO rating
+  // AI Turn Logic Effect
   useEffect(() => {
     let timer = null;
     const currentTurn = engine.getTurn();
@@ -185,7 +204,7 @@ export default function App() {
   const handleSquareClick = (squareName) => {
     if (replayMatch || engine.isGameOver() || activeCapture) return;
 
-    // In AI mode, player can only move their chosen color ('w' or 'b')
+    // In AI mode, player can only move their chosen color
     const currentTurn = engine.getTurn();
     if (gameMode === 'ai' && currentTurn !== playerColor) return;
 
@@ -280,6 +299,7 @@ export default function App() {
     showTooltips: tooltipsFlag,
     theme: themeFlag,
   }) => {
+    setActiveStoryStage(null);
     setGameMode(mode);
     setAiElo(elo);
     if (chosenColor) setPlayerColor(chosenColor);
@@ -290,37 +310,81 @@ export default function App() {
     setView('game');
   };
 
-  const handleSelectReplayMatch = (match) => {
-    setReplayMatch(match);
-    setReplayMoveIndex(0);
-    setIsAutoPlaying(false);
+  const handleSelectStoryStage = (stage) => {
+    setActiveStoryStage(stage);
+    setGameMode('ai');
+    setAiElo(stage.elo);
+    setPlayerColor('w');
+    if (stage.theme) setTheme(stage.theme);
+    handleResetGame();
+    setView('game');
   };
 
-  const handleExitReplay = () => {
-    setReplayMatch(null);
-    setIsAutoPlaying(false);
+  const handleLoginProfile = (handle, avatarId, rememberMe) => {
+    const p = createProfile(handle, avatarId, rememberMe);
+    setProfile(p);
+    setShowLoginModal(false);
   };
 
-  // Active board and state derivation
+  const activeAvatar = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
+
   const activeLastMove = replayMatch ? replayData?.lastMove : lastMove;
   const activeMoves = replayMatch ? replayData?.moves || [] : moves;
   const activeStatus = replayMatch
     ? replayData?.status || 'Replay'
+    : activeStoryStage
+    ? `${statusMessage} — ${activeStoryStage.name} (${activeStoryStage.elo} ELO)`
     : gameMode === 'ai'
-    ? `${statusMessage} (vs AI ${aiElo} ELO — Playing as ${playerColor === 'w' ? 'White' : 'Black'})`
+    ? `${statusMessage} (vs AI ${aiElo} ELO)`
     : statusMessage;
+
+  // View Renders
+  if (showLoginModal) {
+    return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
+  }
+
+  if (view === 'story') {
+    return (
+      <StoryMap
+        profile={profile}
+        onSelectStage={handleSelectStoryStage}
+        onBackToHome={() => setView('home')}
+        onChangeProfile={() => setShowLoginModal(true)}
+      />
+    );
+  }
 
   if (view === 'home') {
     return (
-      <HomePage
-        onStartGame={handleStartGame}
-        initialElo={aiElo}
-        initialMode={gameMode}
-        initialPlayerColor={playerColor}
-        initialShowMoves={showMoveHighlights}
-        initialShowTooltips={showTooltips}
-        initialTheme={theme}
-      />
+      <div className="home-wrapper-container">
+        {/* Top Header Trainer Chip */}
+        <div className="top-profile-bar">
+          <div className="trainer-chip-badge" onClick={() => setShowLoginModal(true)}>
+            <img src={activeAvatar.url} alt={profile?.handle} className="trainer-chip-img" />
+            <span className="trainer-chip-name font-poke">{profile?.handle || 'Trainer'}</span>
+            <span className="trainer-chip-stats">
+              ({profile?.stats?.wins || 0}W - {profile?.stats?.losses || 0}L)
+            </span>
+          </div>
+
+          <button
+            className="btn-story-mode-launch font-poke"
+            onClick={() => setView('story')}
+          >
+            🎮 STORY CAMPAIGN ►
+          </button>
+        </div>
+
+        <HomePage
+          onStartGame={handleStartGame}
+          initialElo={aiElo}
+          initialMode={gameMode}
+          initialPlayerColor={playerColor}
+          initialShowMoves={showMoveHighlights}
+          initialShowTooltips={showTooltips}
+          initialTheme={theme}
+        />
+      </div>
     );
   }
 
@@ -341,10 +405,25 @@ export default function App() {
           <button className="btn-home-nav font-poke" onClick={() => setView('home')}>
             ◄ Main Menu
           </button>
+
+          {activeStoryStage && (
+            <button className="btn-home-nav font-poke" onClick={() => setView('story')}>
+              🎮 Campaign Map
+            </button>
+          )}
+
+          <div className="trainer-chip-badge mini" onClick={() => setShowLoginModal(true)}>
+            <img src={activeAvatar.url} alt={profile?.handle} className="trainer-chip-img" />
+            <span className="trainer-chip-name font-poke">{profile?.handle || 'Trainer'}</span>
+          </div>
         </div>
-        <h1 className="title font-poke">Pokémon Battle Chess</h1>
+        <h1 className="title font-poke">
+          {activeStoryStage ? `Stage ${activeStoryStage.id}: ${activeStoryStage.name}` : 'Pokémon Battle Chess'}
+        </h1>
         <p className="subtitle">
-          {gameMode === 'ai'
+          {activeStoryStage
+            ? `${activeStoryStage.trainerTitle} (${activeStoryStage.elo} ELO)`
+            : gameMode === 'ai'
             ? `vs AI (${aiElo} ELO) • Playing as ${playerColor === 'w' ? 'White' : 'Black'}`
             : '2 Player Pass & Play'}
         </p>
@@ -379,11 +458,18 @@ export default function App() {
       <main className="game-layout">
         {/* Left Side: Advantage Banner, Captured Pieces & Chess Board */}
         <section className="board-section">
+          {/* Pikachu Coach Banner for early story stages */}
+          {activeStoryStage?.hasCoach && (
+            <PikachuCoachBanner
+              engine={engine}
+              activeBoard={activeBoard}
+              turn={engine.getTurn()}
+            />
+          )}
+
           {/* Material Advantage Header Banner */}
           <div className="advantage-banner font-poke">
-            <h2 className="advantage-title">
-              {gameStats.advantageText}
-            </h2>
+            <h2 className="advantage-title">{gameStats.advantageText}</h2>
           </div>
 
           {/* Captured Pieces Trays */}
@@ -463,17 +549,14 @@ export default function App() {
               </div>
               <button
                 className="btn btn-restart font-poke"
-                onClick={handleExitReplay}
+                onClick={() => setReplayMatch(null)}
               >
                 Exit Replay ✖
               </button>
             </div>
           ) : (
             <div className="controls-bar">
-              <button
-                className="btn btn-restart font-poke"
-                onClick={handleResetGame}
-              >
+              <button className="btn btn-restart font-poke" onClick={handleResetGame}>
                 Reset Match ↺
               </button>
             </div>
@@ -484,7 +567,10 @@ export default function App() {
         <aside className="sidebar-section">
           <MoveList moves={activeMoves} />
           <GameHistory
-            onSelectReplay={handleSelectReplayMatch}
+            onSelectReplay={(match) => {
+              setReplayMatch(match);
+              setReplayMoveIndex(0);
+            }}
             activeReplayId={replayMatch?.id}
           />
         </aside>
