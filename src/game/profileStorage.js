@@ -47,6 +47,7 @@ export function createProfile(handle, avatarId = 'ash', remember = true, difficu
     trainerElo: initialElo,
     unlockedStage: 1,
     badges: [],
+    pokedexCaught: ['pikachu', 'treecko', 'charmander', 'squirtle', 'eevee'],
     stats: {
       wins: 0,
       losses: 0,
@@ -83,6 +84,17 @@ export function clearProfile() {
   } catch (e) {
     console.error('Error clearing profile:', e);
   }
+}
+
+export function recordCaughtPokemon(profile, pokemonId) {
+  if (!profile || !pokemonId) return profile;
+  const updated = { ...profile };
+  const currentCaught = updated.pokedexCaught || ['pikachu', 'treecko', 'charmander', 'squirtle', 'eevee'];
+  if (!currentCaught.includes(pokemonId)) {
+    updated.pokedexCaught = [...currentCaught, pokemonId];
+    saveProfile(updated);
+  }
+  return updated;
 }
 
 export function recordMatchResult(profile, isWin, isDraw = false, stageInfo = null, oppElo = 1200) {

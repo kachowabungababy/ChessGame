@@ -1,0 +1,187 @@
+// Pokédex Regional Database & Environment Mapping
+
+export const POKEDEX_REGIONS = [
+  { id: 'petalburg', name: 'Petalburg Woods', icon: '🌲', theme: 'petalburg' },
+  { id: 'volcano', name: 'Mt. Chimney Volcano', icon: '🌋', theme: 'volcano' },
+  { id: 'sootopolis', name: 'Sootopolis Crater Lake', icon: '🌊', theme: 'sootopolis' },
+  { id: 'mauville', name: 'Mauville Power Plant', icon: '⚡', theme: 'mauville' },
+  { id: 'ice', name: 'Shoal Ice Cave', icon: '❄️', theme: 'ice' },
+  { id: 'skypillar', name: 'Sky Pillar Shrine', icon: '🌌', theme: 'skypillar' },
+  { id: 'classic', name: 'Indigo League Hall', icon: '🏛️', theme: 'classic' },
+];
+
+export const POKEDEX_ENTRIES = [
+  // Petalburg Woods
+  {
+    id: 'pikachu',
+    dexNo: '025',
+    name: 'Pikachu',
+    region: 'petalburg',
+    type: 'Electric ⚡',
+    chessRole: 'King Pawn Opener',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+    desc: 'Uses electric energy to open the center of the chess board with e2 to e4!',
+  },
+  {
+    id: 'treecko',
+    dexNo: '252',
+    name: 'Treecko',
+    region: 'petalburg',
+    type: 'Grass 🌿',
+    chessRole: 'Knight Forker',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/252.png',
+    desc: 'Agile forest climber that jumps over enemy pieces to fork Kings & Rooks.',
+  },
+  {
+    id: 'caterpie',
+    dexNo: '010',
+    name: 'Caterpie',
+    region: 'petalburg',
+    type: 'Bug 🐛',
+    chessRole: 'Pawn Pusher',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png',
+    desc: 'Marches steadily down the board until it promotes into a Queen!',
+  },
+
+  // Mt. Chimney Volcano
+  {
+    id: 'charmander',
+    dexNo: '004',
+    name: 'Charmander',
+    region: 'volcano',
+    type: 'Fire 🔥',
+    chessRole: 'Tactical Forker',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
+    desc: 'Fierce fiery fighter that strikes two unprotected pieces at once.',
+  },
+  {
+    id: 'slugma',
+    dexNo: '218',
+    name: 'Slugma',
+    region: 'volcano',
+    type: 'Fire / Magma 🌋',
+    chessRole: 'Center Guard',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/218.png',
+    desc: 'Melts enemy pawn walls with solid central positioning.',
+  },
+  {
+    id: 'numel',
+    dexNo: '322',
+    name: 'Numel',
+    region: 'volcano',
+    type: 'Fire / Ground 🌋',
+    chessRole: 'Rook Defender',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/322.png',
+    desc: 'Stores magma inside its hump to defend open columns.',
+  },
+
+  // Sootopolis Lake
+  {
+    id: 'squirtle',
+    dexNo: '007',
+    name: 'Squirtle',
+    region: 'sootopolis',
+    type: 'Water 💧',
+    chessRole: 'Back-Rank Mate',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
+    desc: 'Surfs down the back rank to deliver instant checkmate.',
+  },
+  {
+    id: 'lotad',
+    dexNo: '270',
+    name: 'Lotad',
+    region: 'sootopolis',
+    type: 'Water / Grass 🌊',
+    chessRole: 'Bishop Skewer',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/270.png',
+    desc: 'Floats along diagonals to line up attacks on heavy pieces.',
+  },
+  {
+    id: 'wingull',
+    dexNo: '278',
+    name: 'Wingull',
+    region: 'sootopolis',
+    type: 'Water / Flying 🕊️',
+    chessRole: 'Flank Glider',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/278.png',
+    desc: 'Glides across ocean breezes to control open board edges.',
+  },
+
+  // Mauville Plant
+  {
+    id: 'magnemite',
+    dexNo: '081',
+    name: 'Magnemite',
+    region: 'mauville',
+    type: 'Electric ⚡',
+    chessRole: 'Pin Specialist',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/81.png',
+    desc: 'Uses magnetic force to pin enemy pieces against their King.',
+  },
+  {
+    id: 'voltorb',
+    dexNo: '100',
+    name: 'Voltorb',
+    region: 'mauville',
+    type: 'Electric ⚡',
+    chessRole: 'Pawn Sacrifice',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/100.png',
+    desc: 'Surprises opponents with rapid tactical trade offers.',
+  },
+
+  // Shoal Ice Cave
+  {
+    id: 'snorunt',
+    dexNo: '361',
+    name: 'Snorunt',
+    region: 'ice',
+    type: 'Ice ❄️',
+    chessRole: 'Castling Guard',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/361.png',
+    desc: 'Huddles near the King to build an icy castle wall.',
+  },
+  {
+    id: 'spheal',
+    dexNo: '363',
+    name: 'Spheal',
+    region: 'ice',
+    type: 'Ice / Water ❄️',
+    chessRole: 'Endgame Roller',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/363.png',
+    desc: 'Rolls across frozen squares to sweep remaining enemy pawns.',
+  },
+
+  // Sky Pillar Shrine
+  {
+    id: 'bagon',
+    dexNo: '371',
+    name: 'Bagon',
+    region: 'skypillar',
+    type: 'Dragon 🐉',
+    chessRole: 'Queen Attacker',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/371.png',
+    desc: 'Dreams of flying while delivering devastating Queen strikes.',
+  },
+  {
+    id: 'altaria',
+    dexNo: '334',
+    name: 'Altaria',
+    region: 'skypillar',
+    type: 'Dragon / Flying ☁️',
+    chessRole: 'Diagonal Humming',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/334.png',
+    desc: 'Soars like cotton clouds to command long diagonals.',
+  },
+
+  // Indigo League
+  {
+    id: 'eevee',
+    dexNo: '133',
+    name: 'Eevee',
+    region: 'classic',
+    type: 'Normal ⭐',
+    chessRole: 'Pawn Promoter',
+    spriteUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png',
+    desc: 'Evolves into a powerful Queen upon reaching the 8th rank!',
+  },
+];

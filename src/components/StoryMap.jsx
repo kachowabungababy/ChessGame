@@ -65,8 +65,15 @@ export default function StoryMap({ profile, onSelectStage, onSelectWildPuzzle, o
 
         <h1 className="story-title font-poke">Pokémon Chess Campaign</h1>
 
-        {/* Gym Badge Case Pill */}
+        {/* Gym Badge Case Pill & Pokédex Launcher */}
         <div className="badge-case-pill font-poke">
+          <button
+            type="button"
+            className="btn-pokedex-launcher font-poke"
+            onClick={onOpenPokedex}
+          >
+            🔴 POKÉDEX
+          </button>
           <span className="badge-case-title">Badges:</span>
           {profile?.badges && profile.badges.length > 0 ? (
             profile.badges.map((b) => (

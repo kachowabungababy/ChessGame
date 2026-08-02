@@ -3,7 +3,7 @@ import { ChessGameEngine, createEngine } from './game/chessEngine';
 import { saveMatch } from './game/gameStorage';
 import { soundEffects } from './game/audio';
 import { ARENA_THEMES } from './game/themes';
-import { getStoredProfile, createProfile, recordMatchResult, AVATAR_OPTIONS } from './game/profileStorage';
+import { getStoredProfile, createProfile, recordMatchResult, recordCaughtPokemon, AVATAR_OPTIONS } from './game/profileStorage';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
 import MoveList from './components/MoveList';
@@ -14,6 +14,7 @@ import TrainerLoginModal from './components/TrainerLoginModal';
 import StoryMap from './components/StoryMap';
 import PikachuCoachBanner from './components/PikachuCoachBanner';
 import WildPuzzleScreen from './components/WildPuzzleScreen';
+import PokedexModal from './components/PokedexModal';
 import './App.css';
 
 export default function App() {
@@ -312,6 +313,7 @@ export default function App() {
   };
 
   const [activeWildPuzzle, setActiveWildPuzzle] = useState(null);
+  const [showPokedexModal, setShowPokedexModal] = useState(false);
 
   const handleSelectStoryStage = (stage) => {
     setActiveStoryStage(stage);
@@ -351,6 +353,10 @@ export default function App() {
       <WildPuzzleScreen
         puzzle={activeWildPuzzle}
         onComplete={(puzzle) => {
+          if (profile) {
+            const updated = recordCaughtPokemon(profile, puzzle.id.replace('wild_', ''));
+            setProfile(updated);
+          }
           setActiveWildPuzzle(null);
         }}
         onExit={() => setActiveWildPuzzle(null)}
@@ -360,13 +366,19 @@ export default function App() {
 
   if (view === 'story') {
     return (
-      <StoryMap
-        profile={profile}
-        onSelectStage={handleSelectStoryStage}
-        onSelectWildPuzzle={(puzzle) => setActiveWildPuzzle(puzzle)}
-        onBackToHome={() => setView('home')}
-        onChangeProfile={() => setShowLoginModal(true)}
-      />
+      <>
+        {showPokedexModal && (
+          <PokedexModal profile={profile} onClose={() => setShowPokedexModal(false)} />
+        )}
+        <StoryMap
+          profile={profile}
+          onSelectStage={handleSelectStoryStage}
+          onSelectWildPuzzle={(puzzle) => setActiveWildPuzzle(puzzle)}
+          onOpenPokedex={() => setShowPokedexModal(true)}
+          onBackToHome={() => setView('home')}
+          onChangeProfile={() => setShowLoginModal(true)}
+        />
+      </>
     );
   }
 
