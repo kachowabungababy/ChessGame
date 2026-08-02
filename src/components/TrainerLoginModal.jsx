@@ -166,8 +166,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                         speakText(`Selected Trainer ${av.name}`, 'oak');
                       }}
                     >
-                      <img src={av.url} alt={av.name} className="avatar-img" />
-                      <span className="avatar-name font-poke">{av.name}</span>
+                      <img src={av.url} alt={av.region} className="avatar-img" />
                       <span className="avatar-gender-sub">{av.region}</span>
                     </button>
                   ))}

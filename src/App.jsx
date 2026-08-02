@@ -383,6 +383,7 @@ export default function App() {
   const [showLadyEscort, setShowLadyEscort] = useState(false);
   const [showBirthdaySurprise, setShowBirthdaySurprise] = useState(false);
   const [hasCheckedBirthdayInStory, setHasCheckedBirthdayInStory] = useState(false);
+  const [useGBAMapView, setUseGBAMapView] = useState(true);
 
   const handleLoginProfile = (handle, avatarId, rememberMe, password = '') => {
     const p = createProfile(handle, avatarId, rememberMe, password);
@@ -472,8 +473,6 @@ export default function App() {
     );
   }
 
-  const [useGBAMapView, setUseGBAMapView] = useState(true);
-
   if (view === 'story') {
     // Trigger Birthday Check ONCE when entering Story Mode for the first time
     if (!hasCheckedBirthdayInStory && !showBirthdayCheck && !showLadyEscort && !showBirthdaySurprise) {
@@ -523,51 +522,6 @@ export default function App() {
       );
     }
 
-    return (
-      <>
-        {showPokedexModal && (
-          <PokedexModal profile={profile} onClose={() => setShowPokedexModal(false)} />
-        )}
-        <StoryMap
-          profile={profile}
-          onSelectStage={handleSelectStoryStage}
-          onSelectWildPuzzle={(puzzle) => setActiveWildPuzzle(puzzle)}
-          onOpenPokedex={() => setShowPokedexModal(true)}
-          onBackToHome={() => setView('home')}
-          onChangeProfile={() => setShowLoginModal(true)}
-        />
-      </>
-    );
-  }
-
-  if (evolutionEvent) {
-    return (
-      <EvolutionOverlay
-        oldLineup={evolutionEvent.oldLineup}
-        newLineup={evolutionEvent.newLineup}
-        trainerName={profile?.handle || 'Trainer'}
-        onComplete={() => setEvolutionEvent(null)}
-      />
-    );
-  }
-
-  if (activeWildPuzzle) {
-    return (
-      <WildPuzzleScreen
-        puzzle={activeWildPuzzle}
-        onComplete={(puzzle) => {
-          if (profile) {
-            const updated = recordCaughtPokemon(profile, puzzle.id.replace('wild_', ''));
-            setProfile(updated);
-          }
-          setActiveWildPuzzle(null);
-        }}
-        onExit={() => setActiveWildPuzzle(null)}
-      />
-    );
-  }
-
-  if (view === 'story') {
     return (
       <>
         {showPokedexModal && (
