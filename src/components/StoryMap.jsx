@@ -1,27 +1,28 @@
 import React, { useState } from 'react';
-import { STORY_STAGES, DIFFICULTY_TIERS } from '../game/storyCampaign';
+import { getStagesForTier, DIFFICULTY_TIERS } from '../game/storyCampaign';
 import { AVATAR_OPTIONS } from '../game/profileStorage';
 
 export default function StoryMap({ profile, onSelectStage, onBackToHome, onChangeProfile }) {
   const [selectedStageId, setSelectedStageId] = useState(profile?.unlockedStage || 1);
   const [tierFilter, setTierFilter] = useState(profile?.difficultyTier || 'rookie');
 
+  const activeStages = getStagesForTier(tierFilter);
   const avatarObj = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
 
-  const currentStageIndex = STORY_STAGES.findIndex((s) => s.id === selectedStageId);
-  const currentStage = STORY_STAGES[currentStageIndex] || STORY_STAGES[0];
+  const currentStageIndex = activeStages.findIndex((s) => s.id === selectedStageId);
+  const currentStage = activeStages[currentStageIndex] || activeStages[0];
 
   const isUnlocked = currentStage.id <= (profile?.unlockedStage || 1);
 
   const handlePrev = () => {
     if (currentStageIndex > 0) {
-      setSelectedStageId(STORY_STAGES[currentStageIndex - 1].id);
+      setSelectedStageId(activeStages[currentStageIndex - 1].id);
     }
   };
 
   const handleNext = () => {
-    if (currentStageIndex < STORY_STAGES.length - 1) {
-      setSelectedStageId(STORY_STAGES[currentStageIndex + 1].id);
+    if (currentStageIndex < activeStages.length - 1) {
+      setSelectedStageId(activeStages[currentStageIndex + 1].id);
     }
   };
 
@@ -147,7 +148,7 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
         <button
           className="switch-arrow-btn right-arrow font-poke"
           onClick={handleNext}
-          disabled={currentStageIndex === STORY_STAGES.length - 1}
+          disabled={currentStageIndex === activeStages.length - 1}
         >
           ► [R]
         </button>
@@ -155,7 +156,7 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
 
       {/* Stage Grid Quick Selector */}
       <footer className="stage-grid-strip">
-        {STORY_STAGES.map((st) => {
+        {activeStages.map((st) => {
           const unlocked = st.id <= (profile?.unlockedStage || 1);
           return (
             <button
