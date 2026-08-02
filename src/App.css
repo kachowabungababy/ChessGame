@@ -2180,6 +2180,73 @@ body {
   width: 100%;
 }
 
+.ambient-world-npcs-bar {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ambient-title {
+  font-size: 0.78rem;
+  color: var(--accent-gold);
+}
+
+.ambient-npc-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ambient-npc-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #475569;
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ambient-npc-card:hover {
+  border-color: var(--accent-gold);
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateY(-2px);
+}
+
+.ambient-npc-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.ambient-npc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ambient-npc-name {
+  font-size: 0.75rem;
+  color: #ffffff;
+}
+
+.ambient-npc-action {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.ambient-audio-icon {
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));

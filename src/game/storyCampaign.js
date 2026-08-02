@@ -1,4 +1,4 @@
-// Story Campaign Stages, Motivating NPCs, and Simple Kid Dialogue
+// Story Campaign Stages, Motivating NPCs, Villainous Teams, and Kid Dialogue
 
 export const MOTIVATING_NPCS = [
   {
@@ -15,6 +15,30 @@ export const MOTIVATING_NPCS = [
     name: 'Officer Jenny',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/officerjenny.png',
     quote: 'Keep your King safe and guard your team! You have super sharp eyes!',
+  },
+];
+
+export const AMBIENT_WORLD_NPCS = [
+  {
+    id: 'sweeper',
+    name: 'Janitor Tim',
+    action: '🧹 Sweeping the floor...',
+    dialogue: 'Sweeping the Pokémon Gym floor keeps the battle arena shiny!',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/janitor.png',
+  },
+  {
+    id: 'chaser',
+    name: 'Little Billy & Meowth',
+    action: '😸 Chasing a wild Meowth!',
+    dialogue: 'Hey! Come back here, Meowth! I want to play chess with you!',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/schoolkid.png',
+  },
+  {
+    id: 'stargazer',
+    name: 'Swimmer Marina',
+    action: '🌊 Staring at Wingulls over the ocean...',
+    dialogue: 'The ocean breeze feels so peaceful today. Look at the Wingulls!',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/swimmerf.png',
   },
 ];
 
@@ -75,6 +99,15 @@ export const STORY_STAGES = [
   },
   {
     id: 4,
+    name: 'Team Rocket Grunt',
+    trainerTitle: 'Team Rocket Ambush 🚀',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/teamrocket.png',
+    dialogue: 'Prepare for trouble! Hand over your chess Pawns or prepare to battle!',
+    theme: 'mauville',
+    badge: { id: 'rocket_coin', name: 'R-Coin', icon: '🪙' },
+  },
+  {
+    id: 5,
     name: 'Bug Catcher Joey',
     trainerTitle: 'Viridian Forest',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher.png',
@@ -83,7 +116,7 @@ export const STORY_STAGES = [
     badge: { id: 'bug_badge', name: 'Insect Ribbon', icon: '🐛' },
   },
   {
-    id: 5,
+    id: 6,
     name: 'Fisherman Ned',
     trainerTitle: 'Route 102 Fisherman',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/fisherman.png',
@@ -92,7 +125,7 @@ export const STORY_STAGES = [
     badge: null,
   },
   {
-    id: 6,
+    id: 7,
     name: 'Lass Carrie',
     trainerTitle: 'Petalburg Woods',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/lass.png',
@@ -101,7 +134,7 @@ export const STORY_STAGES = [
     badge: null,
   },
   {
-    id: 7,
+    id: 8,
     name: 'Camper Liam',
     trainerTitle: 'Route 104 Camper',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/camper.png',
@@ -110,7 +143,16 @@ export const STORY_STAGES = [
     badge: null,
   },
   {
-    id: 8,
+    id: 9,
+    name: 'Team Magma Grunt',
+    trainerTitle: 'Volcano Ambush 🌋',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/magmagrunt.png',
+    dialogue: 'We will heat up the chess board with fiery volcanic moves!',
+    theme: 'volcano',
+    badge: { id: 'magma_emblem', name: 'Magma Emblem', icon: '🌋' },
+  },
+  {
+    id: 10,
     name: 'Picnicker Diane',
     trainerTitle: 'Petalburg Outskirts',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/picnicker.png',
@@ -119,7 +161,7 @@ export const STORY_STAGES = [
     badge: { id: 'forest_badge', name: 'Forest Ribbon', icon: '🌲' },
   },
   {
-    id: 9,
+    id: 11,
     name: 'Hiker Anthony',
     trainerTitle: 'Mt. Chimney Foothills',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/hiker.png',
@@ -128,7 +170,7 @@ export const STORY_STAGES = [
     badge: null,
   },
   {
-    id: 10,
+    id: 12,
     name: 'Black Belt Kiyo',
     trainerTitle: 'Dewford Dojo',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/blackbelt.png',
@@ -137,38 +179,20 @@ export const STORY_STAGES = [
     badge: { id: 'fight_badge', name: 'Knuckle Badge', icon: '🥊' },
   },
   {
-    id: 11,
+    id: 13,
+    name: 'Team Aqua Grunt',
+    trainerTitle: 'Ocean Hideout 🌊',
+    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/aquagrunt.png',
+    dialogue: 'The ocean belongs to Team Aqua! Wash away enemy Pawns!',
+    theme: 'sootopolis',
+    badge: { id: 'aqua_crest', name: 'Aqua Crest', icon: '🌊' },
+  },
+  {
+    id: 14,
     name: 'Psychic Edward',
     trainerTitle: 'Mauville Psychic',
     iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/psychic.png',
     dialogue: 'Look across the whole board! Your brain is super powerful!',
-    theme: 'mauville',
-    badge: null,
-  },
-  {
-    id: 12,
-    name: 'Kindler Mark',
-    trainerTitle: 'Mt. Chimney Summit',
-    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/kindler.png',
-    dialogue: 'Your passion is bright like fire! Make your move!',
-    theme: 'volcano',
-    badge: { id: 'heat_badge', name: 'Heat Badge', icon: '🔥' },
-  },
-  {
-    id: 13,
-    name: 'Bird Keeper Toby',
-    trainerTitle: 'Fortree Canopy',
-    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/birdkeeper.png',
-    dialogue: 'Castle your King to safety! Keep flying high!',
-    theme: 'skypillar',
-    badge: null,
-  },
-  {
-    id: 14,
-    name: 'Rocker Hank',
-    trainerTitle: 'New Mauville Plant',
-    iconUrl: 'https://play.pokemonshowdown.com/sprites/trainers/guitarist.png',
-    dialogue: 'Electric moves! You are rocking this chess match!',
     theme: 'mauville',
     badge: null,
   },

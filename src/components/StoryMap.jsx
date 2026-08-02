@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getStagesForTier, DIFFICULTY_TIERS, MOTIVATING_NPCS } from '../game/storyCampaign';
+import { getStagesForTier, DIFFICULTY_TIERS, MOTIVATING_NPCS, AMBIENT_WORLD_NPCS } from '../game/storyCampaign';
 import { AVATAR_OPTIONS, getTrainerRankTitle } from '../game/profileStorage';
 import { speakText } from '../game/speechAudio';
 
@@ -88,6 +88,28 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
             </button>
           </div>
           <p className="npc-quote-text">"{activeNpc.quote}"</p>
+        </div>
+      </div>
+
+      {/* Ambient World NPCs Strip */}
+      <div className="ambient-world-npcs-bar font-poke">
+        <span className="ambient-title">World NPCs Around Town:</span>
+        <div className="ambient-npc-list">
+          {AMBIENT_WORLD_NPCS.map((npc) => (
+            <div
+              key={npc.id}
+              className="ambient-npc-card"
+              onClick={() => speakText(`${npc.name} says: ${npc.dialogue}`)}
+              title="Tap to talk"
+            >
+              <img src={npc.iconUrl} alt={npc.name} className="ambient-npc-img" />
+              <div className="ambient-npc-info">
+                <strong className="ambient-npc-name">{npc.name}</strong>
+                <span className="ambient-npc-action">{npc.action}</span>
+              </div>
+              <span className="ambient-audio-icon">🔊</span>
+            </div>
+          ))}
         </div>
       </div>
 
