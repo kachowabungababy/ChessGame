@@ -49,6 +49,25 @@ export default function StoryMap({ profile, onSelectStage, onSelectWildPuzzle, o
 
   return (
     <div className="story-map-container">
+      {/* Guest Mode Progress Save Warning Banner */}
+      {(profile?.handle === 'Guest' || !profile?.rememberMe) && (
+        <div className="guest-save-warning-banner">
+          <div className="warning-banner-left">
+            <span className="warning-badge-icon font-poke">⚠️ GUEST MODE:</span>
+            <span className="warning-banner-text">
+              Story Campaign progress and Gym Badges will be lost when closing the browser!
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn-create-profile-link font-poke"
+            onClick={onChangeProfile}
+          >
+            📝 Sign Up to Save
+          </button>
+        </div>
+      )}
+
       {/* Switch Handheld Console Header */}
       <header className="switch-console-header">
         <div className="switch-left-group">
