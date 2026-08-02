@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { AVATAR_OPTIONS } from '../game/profileStorage';
+import { DIFFICULTY_TIERS } from '../game/storyCampaign';
 
 export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const [handle, setHandle] = useState(currentProfile?.handle || '');
   const [avatarId, setAvatarId] = useState(currentProfile?.avatarId || 'ash');
+  const [difficultyTier, setDifficultyTier] = useState(currentProfile?.difficultyTier || 'rookie');
   const [rememberMe, setRememberMe] = useState(
     currentProfile?.rememberMe !== undefined ? currentProfile.rememberMe : true
   );
@@ -11,11 +13,11 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!handle.trim()) return;
-    onLogin(handle.trim(), avatarId, rememberMe);
+    onLogin(handle.trim(), avatarId, rememberMe, difficultyTier);
   };
 
   const handleGuest = () => {
-    onLogin('Guest', 'ash', false);
+    onLogin('Guest', 'ash', false, 'rookie');
   };
 
   return (
@@ -25,14 +27,14 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
           <div className="trainer-badge-icon font-poke">🎮</div>
           <h2 className="login-title font-poke">Trainer Registration</h2>
           <p className="login-subtitle">
-            Enter your unique Trainer Handle to track your progress & badges!
+            Enter your unique Trainer Handle to track your profile ELO & badges!
           </p>
         </header>
 
         <form onSubmit={handleSubmit} className="login-form">
           {/* Handle Input */}
           <div className="form-group">
-            <label className="form-label font-poke">Trainer Handle Name:</label>
+            <label className="form-label font-poke">Unique Trainer Handle:</label>
             <input
               type="text"
               className="trainer-handle-input font-poke"
@@ -42,6 +44,26 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
               onChange={(e) => setHandle(e.target.value)}
               required
             />
+          </div>
+
+          {/* Campaign Difficulty Tier Selection */}
+          <div className="form-group">
+            <label className="form-label font-poke">Campaign Difficulty Tier (Locked for Profile):</label>
+            <div className="tier-modal-grid">
+              {Object.values(DIFFICULTY_TIERS).map((t) => (
+                <div
+                  key={t.id}
+                  className={`tier-modal-card ${difficultyTier === t.id ? 'active' : ''}`}
+                  onClick={() => setDifficultyTier(t.id)}
+                >
+                  <div className="tier-modal-header">
+                    <span className="tier-modal-icon">{t.icon}</span>
+                    <strong className="tier-modal-name font-poke">{t.name}</strong>
+                  </div>
+                  <p className="tier-modal-desc">{t.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Avatar Selector */}

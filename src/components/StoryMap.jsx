@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { getStagesForTier, DIFFICULTY_TIERS } from '../game/storyCampaign';
-import { AVATAR_OPTIONS } from '../game/profileStorage';
+import { AVATAR_OPTIONS, getTrainerRankTitle } from '../game/profileStorage';
 
 export default function StoryMap({ profile, onSelectStage, onBackToHome, onChangeProfile }) {
   const [selectedStageId, setSelectedStageId] = useState(profile?.unlockedStage || 1);
-  const [tierFilter, setTierFilter] = useState(profile?.difficultyTier || 'rookie');
+  const activeTierId = profile?.difficultyTier || 'rookie';
 
-  const activeStages = getStagesForTier(tierFilter);
+  const activeStages = getStagesForTier(activeTierId);
   const avatarObj = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
+  const rankTitle = getTrainerRankTitle(profile?.trainerElo || 100);
 
   const currentStageIndex = activeStages.findIndex((s) => s.id === selectedStageId);
   const currentStage = activeStages[currentStageIndex] || activeStages[0];
 
   const isUnlocked = currentStage.id <= (profile?.unlockedStage || 1);
+  const currentTierObj = DIFFICULTY_TIERS[activeTierId] || DIFFICULTY_TIERS.rookie;
 
   const handlePrev = () => {
     if (currentStageIndex > 0) {
@@ -36,7 +38,12 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
           </button>
           <div className="trainer-profile-chip" onClick={onChangeProfile} title="Change Profile">
             <img src={avatarObj.url} alt={profile?.handle} className="chip-avatar-img" />
-            <span className="chip-handle font-poke">{profile?.handle || 'Trainer'}</span>
+            <div className="chip-info">
+              <span className="chip-handle font-poke">{profile?.handle || 'Trainer'}</span>
+              <span className="chip-elo-badge font-poke">
+                {profile?.trainerElo || 100} ELO • {rankTitle}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -57,21 +64,14 @@ export default function StoryMap({ profile, onSelectStage, onBackToHome, onChang
         </div>
       </header>
 
-      {/* Difficulty Tier Selector */}
+      {/* Locked Tier Indicator Bar */}
       <div className="tier-selector-bar">
-        <span className="tier-label font-poke">Campaign Tier:</span>
-        <div className="tier-buttons">
-          {Object.values(DIFFICULTY_TIERS).map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`tier-btn ${tierFilter === t.id ? 'active' : ''}`}
-              onClick={() => setTierFilter(t.id)}
-            >
-              {t.icon} {t.name}
-            </button>
-          ))}
-        </div>
+        <span className="tier-label font-poke">
+          Campaign Tier: {currentTierObj.icon} {currentTierObj.name} (🔒 Locked for {profile?.handle})
+        </span>
+        <span className="tier-desc-text">
+          {currentTierObj.desc}
+        </span>
       </div>
 
       {/* Main Switch Console Screen */}

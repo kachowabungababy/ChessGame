@@ -156,12 +156,12 @@ export default function App() {
           (winner === 'white' && playerColor === 'w') ||
           (winner === 'black' && playerColor === 'b');
         const isDraw = winner === 'draw';
-        const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage);
+        const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage, aiElo);
         setProfile(updated);
       }
       setHasSavedCurrentMatch(true);
     }
-  }, [engine, hasSavedCurrentMatch, profile, playerColor, activeStoryStage]);
+  }, [engine, hasSavedCurrentMatch, profile, playerColor, activeStoryStage, aiElo]);
 
   // AI Turn Logic Effect
   useEffect(() => {
@@ -320,8 +320,8 @@ export default function App() {
     setView('game');
   };
 
-  const handleLoginProfile = (handle, avatarId, rememberMe) => {
-    const p = createProfile(handle, avatarId, rememberMe);
+  const handleLoginProfile = (handle, avatarId, rememberMe, difficultyTier) => {
+    const p = createProfile(handle, avatarId, rememberMe, difficultyTier);
     setProfile(p);
     setShowLoginModal(false);
   };

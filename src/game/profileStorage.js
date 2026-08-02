@@ -12,6 +12,17 @@ export const AVATAR_OPTIONS = [
   { id: 'cynthia', name: 'Cynthia', url: 'https://play.pokemonshowdown.com/sprites/trainers/cynthia.png' },
 ];
 
+export function getTrainerRankTitle(elo = 100) {
+  if (elo <= 200) return '🐣 Baby Trainer';
+  if (elo <= 400) return '🧢 Rookie Trainer';
+  if (elo <= 600) return '🐛 Novice Trainer';
+  if (elo <= 800) return '🥋 Ace Trainer';
+  if (elo <= 1200) return '🗿 Gym Contender';
+  if (elo <= 1600) return '🐉 Elite Contender';
+  if (elo <= 2000) return '👑 Champion Candidate';
+  return '⚡ Grandmaster League';
+}
+
 export function getStoredProfile() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -26,11 +37,14 @@ export function getStoredProfile() {
 
 export function createProfile(handle, avatarId = 'ash', remember = true, difficultyTier = 'rookie') {
   const cleanHandle = handle ? handle.trim() : 'Guest';
+  const initialElo = difficultyTier === 'rookie' ? 50 : difficultyTier === 'trainer' ? 300 : 800;
+
   const newProfile = {
     handle: cleanHandle,
     avatarId,
     rememberMe: remember,
-    difficultyTier,
+    difficultyTier, // Locked difficulty tier for this profile
+    trainerElo: initialElo,
     unlockedStage: 1,
     badges: [],
     stats: {
@@ -71,11 +85,21 @@ export function clearProfile() {
   }
 }
 
-export function recordMatchResult(profile, isWin, isDraw = false, stageInfo = null) {
+export function recordMatchResult(profile, isWin, isDraw = false, stageInfo = null, oppElo = 1200) {
   if (!profile) return profile;
 
   const updated = { ...profile };
   updated.stats = { ...updated.stats };
+
+  // Calculate ELO Change
+  const currentElo = updated.trainerElo || (updated.difficultyTier === 'rookie' ? 50 : 300);
+  const opponentElo = stageInfo ? stageInfo.elo : oppElo;
+  const expected = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
+  const actual = isDraw ? 0.5 : isWin ? 1.0 : 0.0;
+  const kFactor = 32;
+  const deltaElo = Math.round(kFactor * (actual - expected));
+
+  updated.trainerElo = Math.max(50, currentElo + deltaElo);
 
   if (isDraw) {
     updated.stats.draws += 1;

@@ -2027,6 +2027,71 @@ body {
   outline: none;
 }
 
+.tier-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tier-modal-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid #475569;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: all 0.2s ease;
+}
+
+.tier-modal-card:hover {
+  border-color: var(--accent-gold);
+  background: rgba(51, 65, 85, 0.9);
+}
+
+.tier-modal-card.active {
+  border-color: var(--accent-gold);
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.tier-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tier-modal-icon {
+  font-size: 1.1rem;
+}
+
+.tier-modal-name {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+}
+
+.tier-modal-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.chip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chip-elo-badge {
+  font-size: 0.65rem;
+  color: #4ade80;
+}
+
+.tier-desc-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
