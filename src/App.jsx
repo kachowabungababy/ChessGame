@@ -375,12 +375,11 @@ export default function App() {
 
   const [showStarterModal, setShowStarterModal] = useState(false);
 
-  const handleLoginProfile = (handle, avatarId, rememberMe, difficultyTier, starterLineId) => {
-    const p = createProfile(handle, avatarId, rememberMe, difficultyTier, starterLineId);
+  const handleLoginProfile = (handle, avatarId, rememberMe) => {
+    const p = createProfile(handle, avatarId, rememberMe);
     setProfile(p);
     setShowLoginModal(false);
-    setShowStarterModal(true); // Open Oak's Lab Table to pick starter!
-    setView('home'); // Spawn in Home Room!
+    setView('home');
     soundEffects.playVictorySound();
   };
 

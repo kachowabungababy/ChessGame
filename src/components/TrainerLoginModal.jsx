@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { AVATAR_OPTIONS } from '../game/profileStorage';
-import { STARTER_PAWN_LINEUPS } from '../game/pokemonLineups';
-import { DIFFICULTY_TIERS } from '../game/storyCampaign';
 import { speakText } from '../game/speechAudio';
 
 export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'boy', 'girl'
   const [handle, setHandle] = useState(currentProfile?.handle || '');
   const [avatarId, setAvatarId] = useState(currentProfile?.avatarId || 'ash');
-  const [starterLineId, setStarterLineId] = useState(currentProfile?.starterLineId || 'pichu_line');
-  const [difficultyTier, setDifficultyTier] = useState(currentProfile?.difficultyTier || 'rookie');
   const [rememberMe, setRememberMe] = useState(
     currentProfile?.rememberMe !== undefined ? currentProfile.rememberMe : true
   );
@@ -23,7 +19,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!handle.trim()) return;
-    onLogin(handle.trim(), avatarId, rememberMe, difficultyTier, starterLineId);
+    onLogin(handle.trim(), avatarId, rememberMe);
   };
 
   const handleQuickName = (nameStr) => {
@@ -49,13 +45,18 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
               <button
                 type="button"
                 className="btn-tts-speaker"
-                onClick={() => speakText("Hello there! Welcome to the world of Pokémon Chess! Are you a Boy or a Girl? And what is your name?", 'oak')}
+                onClick={() =>
+                  speakText(
+                    'Hello there! Welcome to the world of Pokémon Chess! Are you a Boy or a Girl? And what is your name?',
+                    'oak'
+                  )
+                }
               >
                 🔊 Read Aloud
               </button>
             </div>
             <p className="oak-speech">
-              "Hello there! Welcome to the world of Pokémon Chess! First, select whether you are a Boy or a Girl, choose your Trainer avatar, and enter your name!"
+              "Hello there! Welcome to the world of Pokémon Chess! Choose whether you are a Boy or a Girl, pick your Trainer avatar, and enter your name!"
             </p>
           </div>
         </header>
@@ -136,56 +137,23 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
             </div>
           </div>
 
-          {/* Step 3: Starter Partner Pokémon */}
-          <div className="form-group">
-            <label className="form-label font-poke">3. Choose Starter Partner Pokémon (Pawns):</label>
-            <div className="starter-picker-grid">
-              {STARTER_PAWN_LINEUPS.map((stl) => (
-                <button
-                  key={stl.id}
-                  type="button"
-                  className={`starter-choice-card ${starterLineId === stl.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setStarterLineId(stl.id);
-                    speakText(`Partner selected: ${stl.stage1.name}!`, 'pikachu');
-                  }}
-                >
-                  <img src={stl.stage1.iconUrl} alt={stl.stage1.name} className="starter-card-img" />
-                  <div className="starter-card-info">
-                    <strong className="starter-name">{stl.name}</strong>
-                    <span className="starter-evo-chain">
-                      {stl.stage1.name} ► {stl.stage2.name} ► {stl.stage3.name}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Step 4: Difficulty Tier */}
-          <div className="form-group">
-            <label className="form-label font-poke">4. Select Campaign Mode:</label>
-            <div className="tier-modal-grid">
-              {Object.values(DIFFICULTY_TIERS).map((t) => (
-                <div
-                  key={t.id}
-                  className={`tier-modal-card ${difficultyTier === t.id ? 'active' : ''}`}
-                  onClick={() => setDifficultyTier(t.id)}
-                >
-                  <div className="tier-modal-header">
-                    <span className="tier-modal-icon">{t.icon}</span>
-                    <strong className="tier-modal-name font-poke">{t.name}</strong>
-                  </div>
-                  <p className="tier-modal-desc">{t.desc}</p>
-                </div>
-              ))}
-            </div>
+          {/* Remember Me Checkbox */}
+          <div className="form-checkbox-group">
+            <label className="checkbox-label font-poke">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="custom-checkbox"
+              />
+              <span>Remember me on this device</span>
+            </label>
           </div>
 
           {/* Submit Action */}
           <div className="form-actions font-poke">
             <button type="submit" className="btn-battle-start font-poke">
-              [A] START POKÉMON CHESS ADVENTURE! ►
+              [A] START POKÉMON ADVENTURE! ►
             </button>
           </div>
         </form>
