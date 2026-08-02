@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AVATAR_OPTIONS } from '../game/profileStorage';
+import { AVATAR_OPTIONS, fetchProfileFromSupabase } from '../game/profileStorage';
 import { speakText } from '../game/speechAudio';
 
 export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
@@ -12,6 +12,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
     currentProfile?.rememberMe !== undefined ? currentProfile.rememberMe : true
   );
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredAvatars = AVATAR_OPTIONS.filter((av) => {
     if (genderFilter === 'boy') return av.gender.includes('Boy');
@@ -19,7 +20,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
     return true;
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -38,7 +39,22 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
       return;
     }
 
-    onLogin(handle.trim(), avatarId, rememberMe, password.trim());
+    setIsLoading(true);
+    try {
+      if (authMode === 'signin') {
+        const cloudProfile = await fetchProfileFromSupabase(handle.trim(), password.trim());
+        if (cloudProfile) {
+          onLogin(cloudProfile.handle, cloudProfile.avatarId, true, cloudProfile.password, cloudProfile);
+          setIsLoading(false);
+          return;
+        }
+      }
+      onLogin(handle.trim(), avatarId, rememberMe, password.trim());
+    } catch (err) {
+      setErrorMessage(err.message || 'Login failed! Please check your handle and password.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickName = (nameStr) => {

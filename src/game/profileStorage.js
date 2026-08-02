@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient';
+
 // Profile Storage System for Unique Trainer Handles, Avatars & World Position Migration
 
 const STORAGE_KEY = 'poke_chess_trainer_profile';
@@ -115,6 +117,51 @@ export function createProfile(handle, avatarId = 'ash', remember = true, passwor
   return newProfile;
 }
 
+export async function syncProfileToSupabase(profile) {
+  if (!profile || profile.handle === 'Guest') return;
+  try {
+    const payload = {
+      handle: profile.handle,
+      password: profile.password || '',
+      profile_data: profile,
+      updated_at: new Date().toISOString(),
+    };
+    await supabase.from('trainer_profiles').upsert(payload, { onConflict: 'handle' });
+  } catch (e) {
+    console.warn('Supabase cloud sync skipped or offline:', e?.message || e);
+  }
+}
+
+export async function fetchProfileFromSupabase(handle, password = '') {
+  if (!handle || handle.trim() === 'Guest') return null;
+  try {
+    const cleanHandle = handle.trim();
+    const { data, error } = await supabase
+      .from('trainer_profiles')
+      .select('*')
+      .eq('handle', cleanHandle)
+      .single();
+
+    if (error || !data) return null;
+    if (data.password && password && data.password.trim() !== password.trim()) {
+      throw new Error('Incorrect password for this Trainer Handle!');
+    }
+
+    const fetchedProfile = data.profile_data || data;
+    if (fetchedProfile && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fetchedProfile));
+      } catch (err) {
+        console.error('Error saving local storage:', err);
+      }
+    }
+    return fetchedProfile;
+  } catch (e) {
+    console.error('Error fetching Supabase profile:', e);
+    throw e;
+  }
+}
+
 export function saveProfile(profile) {
   if (!profile) return;
   if (profile.rememberMe && profile.handle !== 'Guest') {
@@ -124,6 +171,8 @@ export function saveProfile(profile) {
         schemaVersion: CURRENT_SCHEMA_VERSION,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      // Asynchronously sync to Supabase cloud
+      syncProfileToSupabase(payload);
     } catch (e) {
       console.error('Error updating profile:', e);
     }

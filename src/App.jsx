@@ -385,8 +385,8 @@ export default function App() {
   const [hasCheckedBirthdayInStory, setHasCheckedBirthdayInStory] = useState(false);
   const [useGBAMapView, setUseGBAMapView] = useState(true);
 
-  const handleLoginProfile = (handle, avatarId, rememberMe, password = '') => {
-    const p = createProfile(handle, avatarId, rememberMe, password);
+  const handleLoginProfile = (handle, avatarId, rememberMe, password = '', cloudProfile = null) => {
+    const p = cloudProfile || createProfile(handle, avatarId, rememberMe, password);
     setProfile(p);
     setShowLoginModal(false);
     setView('home');
