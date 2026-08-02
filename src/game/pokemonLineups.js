@@ -125,6 +125,15 @@ export const KING_OPTIONS = [
 
 export const STARTER_PAWN_LINEUPS = PAWN_OPTIONS;
 
+export const ALL_PIECE_ROLE_OPTIONS = {
+  pawn: PAWN_OPTIONS,
+  knight: KNIGHT_OPTIONS,
+  bishop: BISHOP_OPTIONS,
+  rook: ROOK_OPTIONS,
+  queen: QUEEN_OPTIONS,
+  king: KING_OPTIONS,
+};
+
 export function getEvolutionTierForStage(stageId = 1) {
   if (stageId <= 7) return 1;
   if (stageId <= 14) return 2;
