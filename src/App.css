@@ -2718,6 +2718,251 @@ body {
   color: #f59e0b;
 }
 
+/* ========================================= */
+/* HEARTGOLD WALKING FOLLOWER POKÉMON       */
+/* ========================================= */
+
+.follower-pokemon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.follower-chip-card {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 20px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.follower-chip-card:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(51, 65, 85, 0.95);
+}
+
+.follower-sprite-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.hgss-walk-bounce {
+  animation: envPulse 1.2s ease-in-out infinite;
+}
+
+.follower-name {
+  font-size: 0.75rem;
+  color: #ffffff;
+}
+
+.follower-heart-icon {
+  font-size: 0.75rem;
+}
+
+.follower-dialogue-popup {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 8px 12px;
+  width: 220px;
+  font-size: 0.72rem;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+}
+
+/* ========================================= */
+/* PROFESSOR OAK STARTER SELECTION TABLE     */
+/* ========================================= */
+
+.starter-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  background: rgba(5, 10, 20, 0.94);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.starter-lab-card {
+  background: var(--panel-bg);
+  border: 3px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 1.75rem;
+  width: min(92vw, 680px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.starter-lab-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 2px solid var(--panel-border);
+  padding-bottom: 1rem;
+}
+
+.oak-mini-avatar {
+  width: 54px;
+  height: 54px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid var(--accent-gold);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.oak-mini-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.starter-lab-title {
+  font-size: 1.2rem;
+  color: var(--accent-gold);
+}
+
+.starter-lab-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.oak-lab-table {
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid #475569;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.table-label {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  letter-spacing: 1px;
+}
+
+.pokeball-row {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pokeball-item {
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid #475569;
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pokeball-item:hover, .pokeball-item.active {
+  border-color: var(--accent-gold);
+  background: rgba(51, 65, 85, 0.95);
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
+.pokeball-icon-bounce {
+  font-size: 2rem;
+  animation: envPulse 1.2s ease-in-out infinite;
+}
+
+.pokeball-mon-name {
+  font-size: 0.8rem;
+  color: #ffffff;
+}
+
+.starter-preview-display {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.starter-sprite-frame {
+  width: 90px;
+  height: 90px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.starter-sprite-large {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.starter-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.starter-display-name {
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+}
+
+.starter-chain-pill {
+  font-size: 0.72rem;
+  color: #86efac;
+}
+
+.starter-quote {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.starter-confirm-box {
+  background: rgba(22, 101, 52, 0.2);
+  border: 2px solid #22c55e;
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .list-dex-name {
   font-size: 0.8rem;
   color: #ffffff;

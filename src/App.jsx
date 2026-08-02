@@ -3,7 +3,8 @@ import { ChessGameEngine, createEngine } from './game/chessEngine';
 import { saveMatch } from './game/gameStorage';
 import { soundEffects } from './game/audio';
 import { ARENA_THEMES } from './game/themes';
-import { getStoredProfile, createProfile, recordMatchResult, recordCaughtPokemon, AVATAR_OPTIONS } from './game/profileStorage';
+import { getStoredProfile, createProfile, recordMatchResult, recordCaughtPokemon, saveProfile, AVATAR_OPTIONS } from './game/profileStorage';
+import { getLineupForStage } from './game/pokemonLineups';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
 import MoveList from './components/MoveList';
@@ -15,6 +16,8 @@ import StoryMap from './components/StoryMap';
 import PikachuCoachBanner from './components/PikachuCoachBanner';
 import WildPuzzleScreen from './components/WildPuzzleScreen';
 import PokedexModal from './components/PokedexModal';
+import EvolutionOverlay from './components/EvolutionOverlay';
+import StarterSelectionModal from './components/StarterSelectionModal';
 import './App.css';
 
 export default function App() {
@@ -158,8 +161,24 @@ export default function App() {
           (winner === 'white' && playerColor === 'w') ||
           (winner === 'black' && playerColor === 'b');
         const isDraw = winner === 'draw';
+        const oldUnlocked = profile.unlockedStage || 1;
         const updated = recordMatchResult(profile, isWin, isDraw, activeStoryStage, aiElo);
         setProfile(updated);
+
+        // Evolution animation check for Starter Partner Pawn
+        if (isWin && activeStoryStage) {
+          if (oldUnlocked <= 7 && updated.unlockedStage >= 8) {
+            setEvolutionEvent({
+              oldPawn: getLineupForStage(7).pawn,
+              newPawn: getLineupForStage(8).pawn,
+            });
+          } else if (oldUnlocked <= 14 && updated.unlockedStage >= 15) {
+            setEvolutionEvent({
+              oldPawn: getLineupForStage(14).pawn,
+              newPawn: getLineupForStage(15).pawn,
+            });
+          }
+        }
       }
       setHasSavedCurrentMatch(true);
     }
@@ -325,10 +344,24 @@ export default function App() {
     setView('game');
   };
 
-  const handleLoginProfile = (handle, avatarId, rememberMe, difficultyTier) => {
-    const p = createProfile(handle, avatarId, rememberMe, difficultyTier);
+  const [showStarterModal, setShowStarterModal] = useState(false);
+
+  const handleLoginProfile = (handle, avatarId, rememberMe, difficultyTier, starterLineId) => {
+    const p = createProfile(handle, avatarId, rememberMe, difficultyTier, starterLineId);
     setProfile(p);
     setShowLoginModal(false);
+    setShowStarterModal(true); // Open Oak's Lab Table to pick starter!
+    setView('home'); // Spawn in Home Room!
+    soundEffects.playVictorySound();
+  };
+
+  const handleSelectStarter = (starterId) => {
+    if (profile) {
+      const updated = { ...profile, starterLineId: starterId };
+      setProfile(updated);
+      saveProfile(updated);
+    }
+    setShowStarterModal(false);
   };
 
   const activeAvatar = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
@@ -343,9 +376,31 @@ export default function App() {
     ? `${statusMessage} (vs AI ${aiElo} ELO)`
     : statusMessage;
 
+  const [evolutionEvent, setEvolutionEvent] = useState(null);
+
   // View Renders
   if (showLoginModal) {
     return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
+  }
+
+  if (showStarterModal) {
+    return (
+      <StarterSelectionModal
+        trainerName={profile?.handle || 'Trainer'}
+        onSelectStarter={handleSelectStarter}
+      />
+    );
+  }
+
+  if (evolutionEvent) {
+    return (
+      <EvolutionOverlay
+        oldLineup={evolutionEvent.oldLineup}
+        newLineup={evolutionEvent.newLineup}
+        trainerName={profile?.handle || 'Trainer'}
+        onComplete={() => setEvolutionEvent(null)}
+      />
+    );
   }
 
   if (activeWildPuzzle) {

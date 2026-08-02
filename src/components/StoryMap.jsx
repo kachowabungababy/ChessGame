@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { getStagesForTier, DIFFICULTY_TIERS, MOTIVATING_NPCS, AMBIENT_WORLD_NPCS } from '../game/storyCampaign';
 import { WILD_POKEMON_PUZZLES } from '../game/wildPuzzles';
 import { AVATAR_OPTIONS, getTrainerRankTitle } from '../game/profileStorage';
+import { getLineupForStage } from '../game/pokemonLineups';
 import { speakText } from '../game/speechAudio';
+import FollowerPokemonChip from './FollowerPokemonChip';
 
 export default function StoryMap({ profile, onSelectStage, onSelectWildPuzzle, onBackToHome, onChangeProfile }) {
   const [selectedStageId, setSelectedStageId] = useState(profile?.unlockedStage || 1);
@@ -12,6 +14,7 @@ export default function StoryMap({ profile, onSelectStage, onSelectWildPuzzle, o
   const avatarObj = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
   const rankTitle = getTrainerRankTitle(profile?.trainerElo || 100);
   const trainerName = profile?.handle || 'Trainer';
+  const currentLineup = getLineupForStage(profile?.unlockedStage || 1);
 
   const formatText = (txt) => {
     if (!txt) return '';

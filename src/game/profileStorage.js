@@ -1,15 +1,21 @@
-// Profile Storage System for Unique Trainer Handles
+// Profile Storage System for Unique Trainer Handles & Authentic Game Avatars
 
 const STORAGE_KEY = 'poke_chess_trainer_profile';
 
 export const AVATAR_OPTIONS = [
-  { id: 'ash', name: 'Ash', url: 'https://play.pokemonshowdown.com/sprites/trainers/ash.png' },
-  { id: 'red', name: 'Red', url: 'https://play.pokemonshowdown.com/sprites/trainers/red.png' },
-  { id: 'may', name: 'May', url: 'https://play.pokemonshowdown.com/sprites/trainers/may-gen3.png' },
-  { id: 'dawn', name: 'Dawn', url: 'https://play.pokemonshowdown.com/sprites/trainers/dawn.png' },
-  { id: 'ethan', name: 'Ethan', url: 'https://play.pokemonshowdown.com/sprites/trainers/ethan.png' },
-  { id: 'steven', name: 'Steven', url: 'https://play.pokemonshowdown.com/sprites/trainers/steven.png' },
-  { id: 'cynthia', name: 'Cynthia', url: 'https://play.pokemonshowdown.com/sprites/trainers/cynthia.png' },
+  // Boys
+  { id: 'ash', name: 'Ash', gender: 'Boy 👦', region: 'Kanto', url: 'https://play.pokemonshowdown.com/sprites/trainers/ash.png' },
+  { id: 'red', name: 'Red', gender: 'Boy 👦', region: 'Kanto', url: 'https://play.pokemonshowdown.com/sprites/trainers/red.png' },
+  { id: 'ethan', name: 'Ethan', gender: 'Boy 👦', region: 'Johto', url: 'https://play.pokemonshowdown.com/sprites/trainers/ethan.png' },
+  { id: 'brendan', name: 'Brendan', gender: 'Boy 👦', region: 'Hoenn', url: 'https://play.pokemonshowdown.com/sprites/trainers/brendan-gen3.png' },
+  { id: 'lucas', name: 'Lucas', gender: 'Boy 👦', region: 'Sinnoh', url: 'https://play.pokemonshowdown.com/sprites/trainers/lucas.png' },
+
+  // Girls
+  { id: 'may', name: 'May', gender: 'Girl 👧', region: 'Hoenn', url: 'https://play.pokemonshowdown.com/sprites/trainers/may-gen3.png' },
+  { id: 'dawn', name: 'Dawn', gender: 'Girl 👧', region: 'Sinnoh', url: 'https://play.pokemonshowdown.com/sprites/trainers/dawn.png' },
+  { id: 'leaf', name: 'Leaf', gender: 'Girl 👧', region: 'Kanto', url: 'https://play.pokemonshowdown.com/sprites/trainers/leaf-gen3.png' },
+  { id: 'serena', name: 'Serena', gender: 'Girl 👧', region: 'Kalos', url: 'https://play.pokemonshowdown.com/sprites/trainers/serena.png' },
+  { id: 'cynthia', name: 'Cynthia', gender: 'Champion 👑', region: 'Sinnoh', url: 'https://play.pokemonshowdown.com/sprites/trainers/cynthia.png' },
 ];
 
 export function getTrainerRankTitle(elo = 100) {
