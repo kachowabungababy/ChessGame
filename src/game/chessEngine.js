@@ -48,6 +48,17 @@ export class ChessGameEngine {
     }
   }
 
+  isPromotionMove(from, to) {
+    try {
+      const piece = this.chess.get(from);
+      if (!piece || piece.type !== 'p') return false;
+      const targetRank = to[1];
+      return (piece.color === 'w' && targetRank === '8') || (piece.color === 'b' && targetRank === '1');
+    } catch {
+      return false;
+    }
+  }
+
   makeMove(from, to, promotion = 'q') {
     try {
       const move = this.chess.move({ from, to, promotion });

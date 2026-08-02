@@ -2963,6 +2963,212 @@ body {
   gap: 0.75rem;
 }
 
+/* ========================================= */
+/* TEAM CUSTOMIZER MODAL                     */
+/* ========================================= */
+
+.team-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2300;
+  background: rgba(5, 10, 20, 0.94);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.team-modal-card {
+  background: var(--panel-bg);
+  border: 3px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 1.75rem;
+  width: min(94vw, 760px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.team-modal-header {
+  border-bottom: 2px solid var(--panel-border);
+  padding-bottom: 0.75rem;
+}
+
+.team-modal-title {
+  font-size: 1.2rem;
+  color: var(--accent-gold);
+}
+
+.team-modal-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.team-role-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.role-selector-box {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.role-label {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+}
+
+.role-options-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-role-choice {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid #475569;
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-role-choice:hover, .btn-role-choice.active {
+  border-color: var(--accent-gold);
+  background: rgba(51, 65, 85, 0.95);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+.role-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.team-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 2px solid var(--panel-border);
+  padding-top: 1rem;
+}
+
+/* ========================================= */
+/* PAWN PROMOTION PICKER MODAL               */
+/* ========================================= */
+
+.promotion-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  background: rgba(5, 10, 20, 0.95);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.promotion-modal-card {
+  background: var(--panel-bg);
+  border: 3px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 1.75rem;
+  width: min(92vw, 680px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.promo-title {
+  font-size: 1.3rem;
+  color: var(--accent-gold);
+}
+
+.promo-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.promotion-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.promotion-option-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid #475569;
+  border-radius: 16px;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promotion-option-card:hover {
+  border-color: var(--accent-gold);
+  background: rgba(30, 41, 59, 0.95);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.promo-sprite-box {
+  width: 70px;
+  height: 70px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.promo-sprite-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.promo-piece-badge {
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+}
+
+.promo-mon-name {
+  font-size: 0.78rem;
+  color: #ffffff;
+}
+
+.promo-desc {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
 .list-dex-name {
   font-size: 0.8rem;
   color: #ffffff;

@@ -18,6 +18,7 @@ import WildPuzzleScreen from './components/WildPuzzleScreen';
 import PokedexModal from './components/PokedexModal';
 import EvolutionOverlay from './components/EvolutionOverlay';
 import StarterSelectionModal from './components/StarterSelectionModal';
+import PromotionModal from './components/PromotionModal';
 import './App.css';
 
 export default function App() {
@@ -222,10 +223,33 @@ export default function App() {
     };
   }, [view, gameMode, playerColor, aiElo, board, activeCapture, replayMatch, engine, applyGameStateUpdate]);
 
-  const handleSquareClick = (squareName) => {
-    if (replayMatch || engine.isGameOver() || activeCapture) return;
+  const [pendingPromotionMove, setPendingPromotionMove] = useState(null);
 
-    // In AI mode, player can only move their chosen color
+  const handleSelectPromotion = (choice) => {
+    if (pendingPromotionMove) {
+      const result = engine.makeMove(pendingPromotionMove.from, pendingPromotionMove.to, choice);
+      if (result && result.move) {
+        setSelectedSquare(null);
+        setPossibleMoves([]);
+        soundEffects.playMoveSound();
+        if (result.captureData) {
+          setPendingMove(result.move);
+          setActiveCapture({
+            ...result.captureData,
+            isCheckmate: engine.chess.isCheckmate(),
+          });
+        } else {
+          applyGameStateUpdate(result.move);
+        }
+      }
+      setPendingPromotionMove(null);
+    }
+  };
+
+  const handleSquareClick = (squareName) => {
+    if (replayMatch) return;
+    if (activeCapture) return;
+
     const currentTurn = engine.getTurn();
     if (gameMode === 'ai' && currentTurn !== playerColor) return;
 
@@ -241,6 +265,11 @@ export default function App() {
       }
 
       if (possibleMoves.includes(squareName)) {
+        if (engine.isPromotionMove(selectedSquare, squareName)) {
+          setPendingPromotionMove({ from: selectedSquare, to: squareName });
+          return;
+        }
+
         const result = engine.makeMove(selectedSquare, squareName);
         if (result && result.move) {
           setSelectedSquare(null);
