@@ -44,11 +44,13 @@ export default function HomePage({
   onStartGame,
   initialElo = 1200,
   initialMode = 'ai',
+  initialPlayerColor = 'w',
   initialShowMoves = true,
   initialShowTooltips = true,
   initialTheme = 'classic',
 }) {
   const [mode, setMode] = useState(initialMode);
+  const [playerColor, setPlayerColor] = useState(initialPlayerColor);
   const [elo, setElo] = useState(initialElo);
   const [showMoveHighlights, setShowMoveHighlights] = useState(initialShowMoves);
   const [showTooltips, setShowTooltips] = useState(initialShowTooltips);
@@ -89,6 +91,7 @@ export default function HomePage({
       onStartGame({
         mode,
         elo,
+        playerColor,
         showMoveHighlights: isMoveHighlightsLocked ? false : showMoveHighlights,
         showTooltips,
         theme,
@@ -143,6 +146,38 @@ export default function HomePage({
             </div>
           </div>
         </div>
+
+        {/* Side Selector (When mode is AI) */}
+        {mode === 'ai' && (
+          <div className="home-section animation-fade">
+            <h3 className="section-label">Choose Your Side</h3>
+            <div className="mode-cards-grid">
+              <div
+                className={`mode-card ${playerColor === 'w' ? 'active' : ''}`}
+                onClick={() => setPlayerColor('w')}
+              >
+                <div className="mode-icon">⚪</div>
+                <div className="mode-details">
+                  <h4>Play as White</h4>
+                  <p>Move 1st • Pikachu & White Team</p>
+                </div>
+                <div className="radio-indicator">{playerColor === 'w' ? '●' : '○'}</div>
+              </div>
+
+              <div
+                className={`mode-card ${playerColor === 'b' ? 'active' : ''}`}
+                onClick={() => setPlayerColor('b')}
+              >
+                <div className="mode-icon">🌑</div>
+                <div className="mode-details">
+                  <h4>Play as Black</h4>
+                  <p>Move 2nd • Poochyena & Black Team</p>
+                </div>
+                <div className="radio-indicator">{playerColor === 'b' ? '●' : '○'}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Arena Theme Selector */}
         <div className="home-section">

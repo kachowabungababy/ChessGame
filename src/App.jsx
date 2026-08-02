@@ -15,6 +15,7 @@ export default function App() {
   // Pre-Match Configuration State
   const [view, setView] = useState('home'); // 'home' | 'game'
   const [gameMode, setGameMode] = useState('ai'); // '2p' | 'ai'
+  const [playerColor, setPlayerColor] = useState('w'); // 'w' | 'b'
   const [aiElo, setAiElo] = useState(1200); // 400 to 2400
   const [showMoveHighlights, setShowMoveHighlights] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
@@ -147,11 +148,11 @@ export default function App() {
   useEffect(() => {
     let timer = null;
     const currentTurn = engine.getTurn();
+    const isAiTurn = gameMode === 'ai' && currentTurn !== playerColor;
 
     if (
       view === 'game' &&
-      gameMode === 'ai' &&
-      currentTurn === 'b' &&
+      isAiTurn &&
       !engine.isGameOver() &&
       !activeCapture &&
       !replayMatch
@@ -179,14 +180,14 @@ export default function App() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [view, gameMode, aiElo, board, activeCapture, replayMatch, engine, applyGameStateUpdate]);
+  }, [view, gameMode, playerColor, aiElo, board, activeCapture, replayMatch, engine, applyGameStateUpdate]);
 
   const handleSquareClick = (squareName) => {
     if (replayMatch || engine.isGameOver() || activeCapture) return;
 
-    // In AI mode, player can only move White ('w')
+    // In AI mode, player can only move their chosen color ('w' or 'b')
     const currentTurn = engine.getTurn();
-    if (gameMode === 'ai' && currentTurn === 'b') return;
+    if (gameMode === 'ai' && currentTurn !== playerColor) return;
 
     const col = squareName.charCodeAt(0) - 97;
     const row = 8 - parseInt(squareName[1], 10);
@@ -274,12 +275,14 @@ export default function App() {
   const handleStartGame = ({
     mode,
     elo,
+    playerColor: chosenColor,
     showMoveHighlights: movesFlag,
     showTooltips: tooltipsFlag,
     theme: themeFlag,
   }) => {
     setGameMode(mode);
     setAiElo(elo);
+    if (chosenColor) setPlayerColor(chosenColor);
     setShowMoveHighlights(movesFlag);
     setShowTooltips(tooltipsFlag);
     if (themeFlag) setTheme(themeFlag);
@@ -304,7 +307,7 @@ export default function App() {
   const activeStatus = replayMatch
     ? replayData?.status || 'Replay'
     : gameMode === 'ai'
-    ? `${statusMessage} (AI ${aiElo} ELO)`
+    ? `${statusMessage} (vs AI ${aiElo} ELO — Playing as ${playerColor === 'w' ? 'White' : 'Black'})`
     : statusMessage;
 
   if (view === 'home') {
@@ -313,6 +316,7 @@ export default function App() {
         onStartGame={handleStartGame}
         initialElo={aiElo}
         initialMode={gameMode}
+        initialPlayerColor={playerColor}
         initialShowMoves={showMoveHighlights}
         initialShowTooltips={showTooltips}
         initialTheme={theme}
@@ -340,7 +344,9 @@ export default function App() {
         </div>
         <h1 className="title font-poke">Pokémon Battle Chess</h1>
         <p className="subtitle">
-          {gameMode === 'ai' ? `vs AI (${aiElo} ELO)` : '2 Player Pass & Play'}
+          {gameMode === 'ai'
+            ? `vs AI (${aiElo} ELO) • Playing as ${playerColor === 'w' ? 'White' : 'Black'}`
+            : '2 Player Pass & Play'}
         </p>
 
         {/* Dynamic In-Game Display & Theme Settings */}
@@ -360,81 +366,84 @@ export default function App() {
           </div>
 
           <button
-            className={`tooltip-toggle-btn ${showTooltips ? 'enabled' : 'disabled'}`}
+            type="button"
+            className={`tooltip-toggle-btn ${showTooltips ? 'enabled' : ''}`}
             onClick={() => setShowTooltips((prev) => !prev)}
-            title="Toggle Pokémon name hover badge on/off during game"
           >
-            {showTooltips ? '🏷️ Badges: ON' : '🏷️ Badges: OFF'}
+            🏷️ Badges {showTooltips ? 'ON' : 'OFF'}
           </button>
         </div>
       </header>
 
+      {/* Main Game Layout */}
       <main className="game-layout">
-        <div className="board-section">
-          {/* Percentage Advantage Banner */}
-          <div className="advantage-banner">
-            <h2 className="advantage-title">{gameStats.advantageText}</h2>
+        {/* Left Side: Advantage Banner, Captured Pieces & Chess Board */}
+        <section className="board-section">
+          {/* Material Advantage Header Banner */}
+          <div className="advantage-banner font-poke">
+            <h2 className="advantage-title">
+              {gameStats.advantageText}
+            </h2>
           </div>
 
-          {/* Top Captured Tray (Black's captures / White pieces taken) */}
-          <div className="captured-tray-wrapper top-tray">
-            <div className="tray-owner-label font-poke">
-              {gameMode === 'ai' ? 'Computer Captures' : 'Black Captures'}
-            </div>
-            <CapturedPiecesTray pieces={gameStats.capturedWhite} showTooltips={showTooltips} />
-          </div>
+          {/* Captured Pieces Trays */}
+          <CapturedPiecesTray
+            capturedWhite={gameStats.capturedWhite}
+            capturedBlack={gameStats.capturedBlack}
+            showTooltips={showTooltips}
+          />
 
-          <div className="status-banner">
-            <span className={`status-text ${!replayMatch && engine.inCheck() ? 'check-text' : ''}`}>
+          {/* Game Status Banner */}
+          <div className="status-banner font-poke">
+            <p
+              className={`status-text ${
+                activeStatus.includes('Check') ? 'check-text' : ''
+              }`}
+            >
               {activeStatus}
-            </span>
+            </p>
           </div>
 
+          {/* Interactive Chess Board */}
           <Board
             board={activeBoard}
-            selectedSquare={replayMatch ? null : selectedSquare}
-            possibleMoves={replayMatch ? [] : possibleMoves}
+            selectedSquare={selectedSquare}
+            possibleMoves={possibleMoves}
             lastMove={activeLastMove}
             inCheckSquare={inCheckSquare}
             showMoveHighlights={showMoveHighlights}
             showTooltips={showTooltips}
             onSquareClick={handleSquareClick}
-            disabled={!!activeCapture || !!replayMatch}
+            disabled={!!replayMatch}
+            flipped={gameMode === 'ai' && playerColor === 'b'}
           />
 
-          {/* Bottom Captured Tray (White's captures / Black pieces taken) */}
-          <div className="captured-tray-wrapper bottom-tray">
-            <div className="tray-owner-label font-poke">
-              {gameMode === 'ai' ? 'Player Captures' : 'White Captures'}
-            </div>
-            <CapturedPiecesTray pieces={gameStats.capturedBlack} showTooltips={showTooltips} />
-          </div>
-
-          <div className="controls-bar">
-            {replayMatch ? (
+          {/* Replay Controls / Game Controls */}
+          {replayMatch ? (
+            <div className="controls-bar">
               <div className="replay-controls">
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-secondary font-poke"
                   onClick={() => setReplayMoveIndex(0)}
                   disabled={replayMoveIndex === 0}
                 >
-                  |◄ Start
+                  |◄
                 </button>
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-secondary font-poke"
                   onClick={() => setReplayMoveIndex((prev) => Math.max(0, prev - 1))}
                   disabled={replayMoveIndex === 0}
                 >
-                  ◄ Step Back
+                  ◄ Prev
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary font-poke"
                   onClick={() => setIsAutoPlaying((prev) => !prev)}
                 >
-                  {isAutoPlaying ? 'Pause ❚❚' : 'Auto Play ⏯'}
+                  {isAutoPlaying ? 'Pause ❚❚' : 'Play ►'}
                 </button>
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-secondary font-poke"
                   onClick={() =>
                     setReplayMoveIndex((prev) =>
                       Math.min(replayMatch.moves.length, prev + 1)
@@ -442,34 +451,43 @@ export default function App() {
                   }
                   disabled={replayMoveIndex >= replayMatch.moves.length}
                 >
-                  Step Forward ►
+                  Next ►
                 </button>
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-secondary font-poke"
                   onClick={() => setReplayMoveIndex(replayMatch.moves.length)}
                   disabled={replayMoveIndex >= replayMatch.moves.length}
                 >
-                  End ►|
-                </button>
-                <button className="btn btn-restart" onClick={handleExitReplay}>
-                  Exit Replay
+                  ►|
                 </button>
               </div>
-            ) : (
-              <button className="btn btn-restart" onClick={handleResetGame}>
-                New Game
+              <button
+                className="btn btn-restart font-poke"
+                onClick={handleExitReplay}
+              >
+                Exit Replay ✖
               </button>
-            )}
-          </div>
-        </div>
+            </div>
+          ) : (
+            <div className="controls-bar">
+              <button
+                className="btn btn-restart font-poke"
+                onClick={handleResetGame}
+              >
+                Reset Match ↺
+              </button>
+            </div>
+          )}
+        </section>
 
-        <div className="sidebar-section">
+        {/* Right Side: Moves Log & Saved Game History */}
+        <aside className="sidebar-section">
           <MoveList moves={activeMoves} />
           <GameHistory
             onSelectReplay={handleSelectReplayMatch}
-            currentReplayId={replayMatch?.id}
+            activeReplayId={replayMatch?.id}
           />
-        </div>
+        </aside>
       </main>
     </div>
   );
