@@ -19,6 +19,8 @@ import PokedexModal from './components/PokedexModal';
 import EvolutionOverlay from './components/EvolutionOverlay';
 import StarterSelectionModal from './components/StarterSelectionModal';
 import PromotionModal from './components/PromotionModal';
+import BirthdayCheckModal from './components/BirthdayCheckModal';
+import BirthdaySurpriseModal from './components/BirthdaySurpriseModal';
 import './App.css';
 
 export default function App() {
@@ -374,13 +376,23 @@ export default function App() {
   };
 
   const [showStarterModal, setShowStarterModal] = useState(false);
+  const [isBirthday, setIsBirthday] = useState(false);
+  const [showBirthdayCheck, setShowBirthdayCheck] = useState(false);
+  const [showBirthdaySurprise, setShowBirthdaySurprise] = useState(false);
 
   const handleLoginProfile = (handle, avatarId, rememberMe) => {
     const p = createProfile(handle, avatarId, rememberMe);
     setProfile(p);
     setShowLoginModal(false);
+    setShowBirthdayCheck(true); // Mom runs up to ask if it's your birthday!
     setView('home');
     soundEffects.playVictorySound();
+  };
+
+  const handleAnswerBirthday = (hasBirthday) => {
+    setIsBirthday(hasBirthday);
+    setShowBirthdayCheck(false);
+    setShowStarterModal(true);
   };
 
   const handleSelectStarter = (starterId) => {
@@ -390,6 +402,10 @@ export default function App() {
       saveProfile(updated);
     }
     setShowStarterModal(false);
+
+    if (isBirthday) {
+      setShowBirthdaySurprise(true); // Launch Birthday Celebration Video/Song!
+    }
   };
 
   const activeAvatar = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
@@ -411,11 +427,29 @@ export default function App() {
     return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
   }
 
+  if (showBirthdayCheck) {
+    return (
+      <BirthdayCheckModal
+        trainerName={profile?.handle || 'Trainer'}
+        onAnswerBirthday={handleAnswerBirthday}
+      />
+    );
+  }
+
   if (showStarterModal) {
     return (
       <StarterSelectionModal
         trainerName={profile?.handle || 'Trainer'}
         onSelectStarter={handleSelectStarter}
+      />
+    );
+  }
+
+  if (showBirthdaySurprise) {
+    return (
+      <BirthdaySurpriseModal
+        trainerName={profile?.handle || 'Trainer'}
+        onComplete={() => setShowBirthdaySurprise(false)}
       />
     );
   }

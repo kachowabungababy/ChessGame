@@ -148,7 +148,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                 <label className="form-label font-poke">2. What is your Trainer Name?</label>
                 <input
                   type="text"
-                  className="trainer-handle-input font-poke"
+                  className="trainer-handle-input"
                   placeholder="Enter your name... (e.g. Leo, Ash, Red)"
                   maxLength={16}
                   value={handle}
@@ -196,14 +196,16 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
         {/* Mode 2: Existing Trainer Sign In */}
         {authMode === 'signin' && (
           <form onSubmit={handleSubmit} className="login-form signin-box">
-            <h3 className="signin-title font-poke">🔑 TRAINER SIGN IN</h3>
-            <p className="signin-desc">Enter your registered Trainer Handle to load your ELO, Badges, and Pokédex!</p>
+            <div className="signin-header">
+              <h3 className="signin-title font-poke">🔑 TRAINER SIGN IN</h3>
+              <p className="signin-desc">Enter your registered Trainer Handle to load your ELO, Badges, and Pokédex!</p>
+            </div>
 
             <div className="form-group">
               <label className="form-label font-poke">Trainer Name / Handle:</label>
               <input
                 type="text"
-                className="trainer-handle-input font-poke"
+                className="trainer-handle-input"
                 placeholder="Enter registered Trainer Name..."
                 maxLength={16}
                 value={handle}
