@@ -41,16 +41,16 @@ export function getStoredProfile() {
   return null;
 }
 
-export function createProfile(handle, avatarId = 'ash', remember = true, difficultyTier = 'rookie') {
+export function createProfile(handle, avatarId = 'ash', remember = true, password = '') {
   const cleanHandle = handle ? handle.trim() : 'Guest';
-  const initialElo = difficultyTier === 'rookie' ? 50 : difficultyTier === 'trainer' ? 300 : 800;
 
   const newProfile = {
     handle: cleanHandle,
+    password: password ? password.trim() : '',
     avatarId,
     rememberMe: remember,
-    difficultyTier, // Locked difficulty tier for this profile
-    trainerElo: initialElo,
+    difficultyTier: 'rookie',
+    trainerElo: 50,
     unlockedStage: 1,
     badges: [],
     pokedexCaught: ['pikachu', 'treecko', 'charmander', 'squirtle', 'eevee'],
@@ -58,18 +58,15 @@ export function createProfile(handle, avatarId = 'ash', remember = true, difficu
       wins: 0,
       losses: 0,
       draws: 0,
+      puzzlesSolved: 0,
     },
-    history: [],
     createdAt: new Date().toISOString(),
   };
 
   if (remember && cleanHandle !== 'Guest') {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
-    } catch (e) {
-      console.error('Error saving profile:', e);
-    }
+    saveProfile(newProfile);
   }
+
   return newProfile;
 }
 

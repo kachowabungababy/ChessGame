@@ -6,10 +6,12 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const [authMode, setAuthMode] = useState('signup'); // 'signup', 'signin', 'guest'
   const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'boy', 'girl'
   const [handle, setHandle] = useState(currentProfile?.handle || '');
+  const [password, setPassword] = useState('');
   const [avatarId, setAvatarId] = useState(currentProfile?.avatarId || 'ash');
   const [rememberMe, setRememberMe] = useState(
     currentProfile?.rememberMe !== undefined ? currentProfile.rememberMe : true
   );
+  const [errorMessage, setErrorMessage] = useState('');
 
   const filteredAvatars = AVATAR_OPTIONS.filter((av) => {
     if (genderFilter === 'boy') return av.gender.includes('Boy');
@@ -19,13 +21,24 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErrorMessage('');
+
     if (authMode === 'guest') {
-      onLogin('Guest', 'ash', false);
+      onLogin('Guest', 'ash', false, '');
       return;
     }
 
-    if (!handle.trim()) return;
-    onLogin(handle.trim(), avatarId, rememberMe);
+    if (!handle.trim()) {
+      setErrorMessage('Please enter a Trainer Name!');
+      return;
+    }
+
+    if (!password.trim()) {
+      setErrorMessage('Please enter a Trainer Password!');
+      return;
+    }
+
+    onLogin(handle.trim(), avatarId, rememberMe, password.trim());
   };
 
   const handleQuickName = (nameStr) => {
@@ -41,30 +54,46 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
           <button
             type="button"
             className={`auth-tab-btn ${authMode === 'signup' ? 'active' : ''}`}
-            onClick={() => setAuthMode('signup')}
+            onClick={() => {
+              setAuthMode('signup');
+              setErrorMessage('');
+            }}
           >
             📝 New Game
           </button>
           <button
             type="button"
             className={`auth-tab-btn ${authMode === 'signin' ? 'active' : ''}`}
-            onClick={() => setAuthMode('signin')}
+            onClick={() => {
+              setAuthMode('signin');
+              setErrorMessage('');
+            }}
           >
             🔑 Sign In
           </button>
           <button
             type="button"
             className={`auth-tab-btn guest ${authMode === 'guest' ? 'active' : ''}`}
-            onClick={() => setAuthMode('guest')}
+            onClick={() => {
+              setAuthMode('guest');
+              setErrorMessage('');
+            }}
           >
             👤 Play as Guest
           </button>
         </nav>
 
+        {/* Validation Error Message Alert */}
+        {errorMessage && (
+          <div className="auth-error-alert font-poke">
+            ⚠️ {errorMessage}
+          </div>
+        )}
+
         {/* Mode 1: New Game / Sign Up (Professor Oak Intro) */}
         {authMode === 'signup' && (
           <>
-            <header className="login-oak-intro-header font-poke">
+            <header className="login-oak-intro-header">
               <div className="oak-sprite-box">
                 <img
                   src="https://play.pokemonshowdown.com/sprites/trainers/oak.png"
@@ -78,18 +107,20 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                   <button
                     type="button"
                     className="btn-tts-speaker font-poke"
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       speakText(
-                        'Hello there! Welcome to the world of Pokémon Chess! Are you a Boy or a Girl? And what is your name?',
+                        'Hello there! Welcome to the world of Pokémon Chess! Are you a Boy or a Girl? And what is your name and password?',
                         'oak'
-                      )
-                    }
+                      );
+                    }}
                   >
                     🔊 Read Aloud
                   </button>
                 </div>
                 <p className="oak-speech">
-                  "Hello there! Welcome to the world of Pokémon Chess! Choose whether you are a Boy or a Girl, pick your Trainer avatar, and enter your name!"
+                  "Hello there! Welcome to the world of Pokémon Chess! Choose whether you are a Boy or a Girl, pick your Trainer avatar, enter your name and secret password!"
                 </p>
               </div>
             </header>
@@ -98,7 +129,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
               {/* Step 1: Gender Filter & Avatar Selector */}
               <div className="form-group">
                 <div className="gender-tab-row">
-                  <label className="form-label font-poke">1. Are you a Boy or a Girl?</label>
+                  <label className="form-label">1. Are you a Boy or a Girl?</label>
                   <div className="gender-btn-group">
                     <button
                       type="button"
@@ -124,7 +155,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                   </div>
                 </div>
 
-                <div className="avatar-grid font-poke">
+                <div className="avatar-grid">
                   {filteredAvatars.map((av) => (
                     <button
                       key={av.id}
@@ -136,16 +167,16 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                       }}
                     >
                       <img src={av.url} alt={av.name} className="avatar-img" />
-                      <span className="avatar-name">{av.name}</span>
+                      <span className="avatar-name font-poke">{av.name}</span>
                       <span className="avatar-gender-sub">{av.region}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Step 2: Trainer Name Input */}
+              {/* Step 2: Trainer Name & Password */}
               <div className="form-group">
-                <label className="form-label font-poke">2. What is your Trainer Name?</label>
+                <label className="form-label">2. What is your Trainer Name?</label>
                 <input
                   type="text"
                   className="trainer-handle-input"
@@ -155,7 +186,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                   onChange={(e) => setHandle(e.target.value)}
                   required
                 />
-                <div className="quick-name-chips font-poke">
+                <div className="quick-name-chips">
                   <span className="quick-label">Quick Names:</span>
                   {['Leo', 'Ash', 'Red', 'May', 'Dawn', 'Gold', 'Ruby'].map((n) => (
                     <button
@@ -168,6 +199,19 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">3. Create Secret Trainer Password:</label>
+                <input
+                  type="password"
+                  className="trainer-handle-input"
+                  placeholder="Create secret password..."
+                  maxLength={24}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
 
               {/* Remember Me Checkbox */}
@@ -198,11 +242,11 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
           <form onSubmit={handleSubmit} className="login-form signin-box">
             <div className="signin-header">
               <h3 className="signin-title font-poke">🔑 TRAINER SIGN IN</h3>
-              <p className="signin-desc">Enter your registered Trainer Handle to load your ELO, Badges, and Pokédex!</p>
+              <p className="signin-desc">Enter your registered Trainer Handle and Password to load your progress!</p>
             </div>
 
             <div className="form-group">
-              <label className="form-label font-poke">Trainer Name / Handle:</label>
+              <label className="form-label">Trainer Name / Handle:</label>
               <input
                 type="text"
                 className="trainer-handle-input"
@@ -210,6 +254,19 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
                 maxLength={16}
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Trainer Secret Password:</label>
+              <input
+                type="password"
+                className="trainer-handle-input"
+                placeholder="Enter Trainer Password..."
+                maxLength={24}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
@@ -238,7 +295,7 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
               <button
                 type="button"
                 className="btn-guest-start font-poke"
-                onClick={() => onLogin('Guest', 'ash', false)}
+                onClick={() => onLogin('Guest', 'ash', false, '')}
               >
                 PLAY AS GUEST ANYWAY ►
               </button>

@@ -4,15 +4,18 @@ export function speakText(text, speakerType = 'default') {
   if (!('speechSynthesis' in window) || !text) return;
   try {
     window.speechSynthesis.cancel(); // Stop active speech
+    window.speechSynthesis.resume(); // Ensure engine is active!
 
     // Remove emojis for cleaner TTS reading
-    const cleanText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    const cleanText = text
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+      .replace(/"/g, '');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'en-US';
+    utterance.volume = 1.0;
 
     const voices = window.speechSynthesis.getVoices();
-
     const typeLower = (speakerType || '').toLowerCase();
 
     // Voice Pitch, Speed & Gender variations based on character persona
@@ -25,8 +28,8 @@ export function speakText(text, speakerType = 'default') {
       typeLower.includes('cynthia') ||
       typeLower.includes('marina') ||
       typeLower.includes('female') ||
-      typeLower.includes('lass') ||
-      typeLower.includes('picnicker')
+      typeLower.includes('lady') ||
+      typeLower.includes('lass')
     ) {
       utterance.pitch = 1.35; // Gentle, warm female voice
       utterance.rate = 0.9;
@@ -46,8 +49,6 @@ export function speakText(text, speakerType = 'default') {
       typeLower.includes('oak') ||
       typeLower.includes('brock') ||
       typeLower.includes('lance') ||
-      typeLower.includes('wattson') ||
-      typeLower.includes('wallace') ||
       typeLower.includes('male')
     ) {
       utterance.pitch = 0.85; // Deep, mentor male voice
@@ -64,18 +65,18 @@ export function speakText(text, speakerType = 'default') {
         );
         if (maleVoice) utterance.voice = maleVoice;
       }
-    } else if (typeLower.includes('rocket') || typeLower.includes('grunt') || typeLower.includes('magma') || typeLower.includes('aqua')) {
+    } else if (typeLower.includes('rocket') || typeLower.includes('grunt')) {
       utterance.pitch = 0.72; // Mischievous, low villain voice
       utterance.rate = 0.95;
-    } else if (typeLower.includes('timmy') || typeLower.includes('joey') || typeLower.includes('kid') || typeLower.includes('billy')) {
-      utterance.pitch = 1.45; // High energetic kid voice
-      utterance.rate = 0.92;
     } else {
-      utterance.pitch = 1.08;
-      utterance.rate = 0.88;
+      utterance.pitch = 1.05;
+      utterance.rate = 0.9;
     }
 
-    window.speechSynthesis.speak(utterance);
+    // Workaround for Chrome Web Speech queue bug
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 50);
   } catch (e) {
     console.error('Web Speech API error:', e);
   }

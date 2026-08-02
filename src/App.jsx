@@ -22,6 +22,7 @@ import PromotionModal from './components/PromotionModal';
 import BirthdayCheckModal from './components/BirthdayCheckModal';
 import BirthdaySurpriseModal from './components/BirthdaySurpriseModal';
 import LadyEscortOverlay from './components/LadyEscortOverlay';
+import GBATileMap from './components/GBATileMap';
 import './App.css';
 
 export default function App() {
@@ -383,8 +384,8 @@ export default function App() {
   const [showBirthdaySurprise, setShowBirthdaySurprise] = useState(false);
   const [hasCheckedBirthdayInStory, setHasCheckedBirthdayInStory] = useState(false);
 
-  const handleLoginProfile = (handle, avatarId, rememberMe) => {
-    const p = createProfile(handle, avatarId, rememberMe);
+  const handleLoginProfile = (handle, avatarId, rememberMe, password = '') => {
+    const p = createProfile(handle, avatarId, rememberMe, password);
     setProfile(p);
     setShowLoginModal(false);
     setView('home');
@@ -471,6 +472,8 @@ export default function App() {
     );
   }
 
+  const [useGBAMapView, setUseGBAMapView] = useState(true);
+
   if (view === 'story') {
     // Trigger Birthday Check ONCE when entering Story Mode for the first time
     if (!hasCheckedBirthdayInStory && !showBirthdayCheck && !showLadyEscort && !showBirthdaySurprise) {
@@ -505,6 +508,17 @@ export default function App() {
               setShowStarterModal(true);
             }
           }}
+        />
+      );
+    }
+
+    if (useGBAMapView) {
+      return (
+        <GBATileMap
+          profile={profile}
+          onInteractPokeball={() => setShowStarterModal(true)}
+          onTriggerBirthday={() => setShowBirthdaySurprise(true)}
+          onBackToMenu={() => setView('home')}
         />
       );
     }
