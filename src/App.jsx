@@ -21,6 +21,7 @@ import StarterSelectionModal from './components/StarterSelectionModal';
 import PromotionModal from './components/PromotionModal';
 import BirthdayCheckModal from './components/BirthdayCheckModal';
 import BirthdaySurpriseModal from './components/BirthdaySurpriseModal';
+import LadyEscortOverlay from './components/LadyEscortOverlay';
 import './App.css';
 
 export default function App() {
@@ -378,13 +379,14 @@ export default function App() {
   const [showStarterModal, setShowStarterModal] = useState(false);
   const [isBirthday, setIsBirthday] = useState(false);
   const [showBirthdayCheck, setShowBirthdayCheck] = useState(false);
+  const [showLadyEscort, setShowLadyEscort] = useState(false);
   const [showBirthdaySurprise, setShowBirthdaySurprise] = useState(false);
+  const [hasCheckedBirthdayInStory, setHasCheckedBirthdayInStory] = useState(false);
 
   const handleLoginProfile = (handle, avatarId, rememberMe) => {
     const p = createProfile(handle, avatarId, rememberMe);
     setProfile(p);
     setShowLoginModal(false);
-    setShowBirthdayCheck(true); // Mom runs up to ask if it's your birthday!
     setView('home');
     soundEffects.playVictorySound();
   };
@@ -392,7 +394,17 @@ export default function App() {
   const handleAnswerBirthday = (hasBirthday) => {
     setIsBirthday(hasBirthday);
     setShowBirthdayCheck(false);
-    setShowStarterModal(true);
+    setHasCheckedBirthdayInStory(true);
+    setShowLadyEscort(true); // Step outside house -> Lady Guide escorts you!
+  };
+
+  const handleArriveAtLab = () => {
+    setShowLadyEscort(false);
+    if (isBirthday) {
+      setShowBirthdaySurprise(true); // Launch Birthday Celebration Video/Song!
+    } else if (!profile?.starterLineId) {
+      setShowStarterModal(true);
+    }
   };
 
   const handleSelectStarter = (starterId) => {
@@ -402,10 +414,6 @@ export default function App() {
       saveProfile(updated);
     }
     setShowStarterModal(false);
-
-    if (isBirthday) {
-      setShowBirthdaySurprise(true); // Launch Birthday Celebration Video/Song!
-    }
   };
 
   const activeAvatar = AVATAR_OPTIONS.find((a) => a.id === profile?.avatarId) || AVATAR_OPTIONS[0];
@@ -427,15 +435,6 @@ export default function App() {
     return <TrainerLoginModal onLogin={handleLoginProfile} currentProfile={profile} />;
   }
 
-  if (showBirthdayCheck) {
-    return (
-      <BirthdayCheckModal
-        trainerName={profile?.handle || 'Trainer'}
-        onAnswerBirthday={handleAnswerBirthday}
-      />
-    );
-  }
-
   if (showStarterModal) {
     return (
       <StarterSelectionModal
@@ -445,12 +444,85 @@ export default function App() {
     );
   }
 
-  if (showBirthdaySurprise) {
+  if (evolutionEvent) {
     return (
-      <BirthdaySurpriseModal
+      <EvolutionOverlay
+        oldPawn={evolutionEvent.oldPawn}
+        newPawn={evolutionEvent.newPawn}
         trainerName={profile?.handle || 'Trainer'}
-        onComplete={() => setShowBirthdaySurprise(false)}
+        onComplete={() => setEvolutionEvent(null)}
       />
+    );
+  }
+
+  if (activeWildPuzzle) {
+    return (
+      <WildPuzzleScreen
+        puzzle={activeWildPuzzle}
+        onComplete={(puzzle) => {
+          if (profile) {
+            const updated = recordCaughtPokemon(profile, puzzle.id.replace('wild_', ''));
+            setProfile(updated);
+          }
+          setActiveWildPuzzle(null);
+        }}
+        onExit={() => setActiveWildPuzzle(null)}
+      />
+    );
+  }
+
+  if (view === 'story') {
+    // Trigger Birthday Check ONCE when entering Story Mode for the first time
+    if (!hasCheckedBirthdayInStory && !showBirthdayCheck && !showLadyEscort && !showBirthdaySurprise) {
+      setShowBirthdayCheck(true);
+    }
+
+    if (showBirthdayCheck) {
+      return (
+        <BirthdayCheckModal
+          trainerName={profile?.handle || 'Trainer'}
+          onAnswerBirthday={handleAnswerBirthday}
+        />
+      );
+    }
+
+    if (showLadyEscort) {
+      return (
+        <LadyEscortOverlay
+          trainerName={profile?.handle || 'Trainer'}
+          onArriveAtLab={handleArriveAtLab}
+        />
+      );
+    }
+
+    if (showBirthdaySurprise) {
+      return (
+        <BirthdaySurpriseModal
+          trainerName={profile?.handle || 'Trainer'}
+          onComplete={() => {
+            setShowBirthdaySurprise(false);
+            if (!profile?.starterLineId) {
+              setShowStarterModal(true);
+            }
+          }}
+        />
+      );
+    }
+
+    return (
+      <>
+        {showPokedexModal && (
+          <PokedexModal profile={profile} onClose={() => setShowPokedexModal(false)} />
+        )}
+        <StoryMap
+          profile={profile}
+          onSelectStage={handleSelectStoryStage}
+          onSelectWildPuzzle={(puzzle) => setActiveWildPuzzle(puzzle)}
+          onOpenPokedex={() => setShowPokedexModal(true)}
+          onBackToHome={() => setView('home')}
+          onChangeProfile={() => setShowLoginModal(true)}
+        />
+      </>
     );
   }
 
