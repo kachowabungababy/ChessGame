@@ -118,7 +118,7 @@ export function createProfile(handle, avatarId = 'ash', remember = true, passwor
 }
 
 export async function syncProfileToSupabase(profile) {
-  if (!profile || profile.handle === 'Guest') return;
+  if (!supabase || !profile || profile.handle === 'Guest') return;
   try {
     const payload = {
       handle: profile.handle,
@@ -133,7 +133,7 @@ export async function syncProfileToSupabase(profile) {
 }
 
 export async function fetchProfileFromSupabase(handle, password = '') {
-  if (!handle || handle.trim() === 'Guest') return null;
+  if (!supabase || !handle || handle.trim() === 'Guest') return null;
   try {
     const cleanHandle = handle.trim();
     const { data, error } = await supabase
