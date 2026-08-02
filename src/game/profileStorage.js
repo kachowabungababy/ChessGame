@@ -1,6 +1,10 @@
-// Profile Storage System for Unique Trainer Handles & Authentic Game Avatars
+// Profile Storage System for Unique Trainer Handles, Avatars & World Position Migration
 
 const STORAGE_KEY = 'poke_chess_trainer_profile';
+const BACKUP_KEY_V0 = 'poke_chess_trainer_profile_bak_v0';
+
+export const CURRENT_SCHEMA_VERSION = 1;
+export const DEFAULT_WORLD = { mapId: 'littleroot_town', x: 6, y: 14, facing: 'down' };
 
 export const AVATAR_OPTIONS = [
   // Boys
@@ -29,11 +33,50 @@ export function getTrainerRankTitle(elo = 100) {
   return '⚡ Grandmaster League';
 }
 
+function migrateProfile(raw, rawStr) {
+  if (!raw || typeof raw !== 'object') return null;
+  const p = { ...raw };
+  const oldVersion = typeof p.schemaVersion === 'number' ? p.schemaVersion : 0;
+
+  if (oldVersion < 1) {
+    // Backup raw pre-migration JSON string before making v1 schema changes
+    if (rawStr && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(BACKUP_KEY_V0, rawStr);
+      } catch (e) {
+        console.error('Failed to write profile backup v0:', e);
+      }
+    }
+
+    if (!p.world || typeof p.world !== 'object') {
+      p.world = { ...DEFAULT_WORLD };
+    }
+    if (!Array.isArray(p.badges)) p.badges = [];
+    if (!Array.isArray(p.pokedexCaught)) {
+      p.pokedexCaught = ['pikachu', 'treecko', 'charmander', 'squirtle', 'eevee'];
+    }
+    if (!p.stats || typeof p.stats !== 'object') {
+      p.stats = { wins: 0, losses: 0, draws: 0, puzzlesSolved: 0 };
+    }
+    if (typeof p.unlockedStage !== 'number') p.unlockedStage = 1;
+    p.schemaVersion = 1;
+  }
+
+  return p;
+}
+
 export function getStoredProfile() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      return JSON.parse(raw);
+    const rawStr = localStorage.getItem(STORAGE_KEY);
+    if (rawStr) {
+      const parsed = JSON.parse(rawStr);
+      const migrated = migrateProfile(parsed, rawStr);
+
+      if (migrated && migrated.rememberMe && migrated.handle !== 'Guest') {
+        saveProfile(migrated);
+      }
+
+      return migrated;
     }
   } catch (e) {
     console.error('Error loading profile:', e);
@@ -45,6 +88,7 @@ export function createProfile(handle, avatarId = 'ash', remember = true, passwor
   const cleanHandle = handle ? handle.trim() : 'Guest';
 
   const newProfile = {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     handle: cleanHandle,
     password: password ? password.trim() : '',
     avatarId,
@@ -60,6 +104,7 @@ export function createProfile(handle, avatarId = 'ash', remember = true, passwor
       draws: 0,
       puzzlesSolved: 0,
     },
+    world: { ...DEFAULT_WORLD },
     createdAt: new Date().toISOString(),
   };
 
@@ -74,11 +119,42 @@ export function saveProfile(profile) {
   if (!profile) return;
   if (profile.rememberMe && profile.handle !== 'Guest') {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+      const payload = {
+        ...profile,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
       console.error('Error updating profile:', e);
     }
   }
+}
+
+export function updateWorldPosition(profile, mapId, x, y, facing) {
+  if (!profile) return profile;
+  if (
+    profile.world?.mapId === mapId &&
+    profile.world?.x === x &&
+    profile.world?.y === y &&
+    profile.world?.facing === facing
+  ) {
+    return profile; // skip duplicate no-op writes
+  }
+
+  const updated = {
+    ...profile,
+    world: { mapId, x, y, facing },
+  };
+  saveProfile(updated);
+  return updated;
+}
+
+export function getWorldSpawn(profile) {
+  const w = profile?.world;
+  if (w && typeof w.x === 'number' && typeof w.y === 'number' && w.mapId) {
+    return w;
+  }
+  return { ...DEFAULT_WORLD };
 }
 
 export function clearProfile() {

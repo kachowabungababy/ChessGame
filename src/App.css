@@ -4482,15 +4482,23 @@ body {
   cursor: pointer;
 }
 
-.gba-tile-grid {
-  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+.gba-phaser-viewport {
+  aspect-ratio: 3 / 2;
+  width: 100%;
   border: 3px solid #14532d;
   border-radius: 18px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+  overflow: hidden;
+  position: relative;
+  background: #000000;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.gba-phaser-viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .grid-row {

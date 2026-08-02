@@ -1,176 +1,145 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPhaserGame } from '../game/world/createPhaserGame';
+import { worldEvents } from '../game/world/worldEvents';
 import { speakText } from '../game/speechAudio';
-import { soundEffects } from '../game/audio';
-import { playLittlerootTownTheme, stopLittlerootTownTheme } from '../game/littlerootTheme';
 
-// 12x10 GBA Tile Map Grid for Hoenn - Littleroot Town
-// T: Hoenn Trees (solid), G: Grass/Flowers (walkable), P: Dirt Path (walkable), H: Brendan/May House, L: Prof. Birch's Lab, B: Starter Pokéball Table
-const LITTLEROOT_GRID = [
-  ['T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T'],
-  ['T', 'H', 'H', 'T', 'T', 'L', 'L', 'L', 'T', 'T', 'T', 'T'],
-  ['T', 'H', 'H', 'P', 'P', 'L', 'B', 'L', 'P', 'G', 'G', 'T'],
-  ['T', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'G', 'T'],
-  ['T', 'G', 'G', 'P', 'G', 'G', 'G', 'P', 'G', 'G', 'G', 'T'],
-  ['T', 'G', 'G', 'P', 'P', 'P', 'P', 'P', 'G', 'G', 'G', 'T'],
-  ['T', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'T'],
-  ['T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T'],
-];
+export default function GBATileMap({ profile, onInteractPokeball, onBackToMenu, onProfileUpdate }) {
+  const containerRef = useRef(null);
+  const gameRef = useRef(null);
+  const sceneRef = useRef(null);
+  const [dialogue, setDialogue] = useState('Welcome to Littleroot Town! Walk over to Professor Birch\'s Lab!');
+  const [mapTitle, setMapTitle] = useState('LITTLEROOT TOWN — HOENN');
 
-export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirthday, onBackToMenu }) {
-  // Player grid position: starting in front of Hoenn House (row 3, col 1)
-  const [playerPos, setPlayerPos] = useState({ r: 3, c: 1 });
-  const [facing, setFacing] = useState('down'); // 'up', 'down', 'left', 'right'
-  const [partnerPos, setPartnerPos] = useState({ r: 3, c: 0 });
-  const [npcPrompt, setNpcPrompt] = useState('Welcome to Littleroot Town! Use D-Pad or Arrow Keys to walk to Prof. Birch\'s Lab!');
-
-  const trainerAvatar = profile?.avatarUrl || 'https://play.pokemonshowdown.com/sprites/trainers/brendan-gen3.png';
-  const partnerSprite = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
-
+  // Mount/destroy Phaser — StrictMode-safe lifecycle
   useEffect(() => {
-    // Play authentic GBA Littleroot Town Theme Music!
-    playLittlerootTownTheme();
-    return () => {
-      stopLittlerootTownTheme();
-    };
-  }, []);
+    let game = null;
+    let cancelled = false;
 
-  const movePlayer = useCallback((dr, dc, dir) => {
-    setFacing(dir);
-    setPlayerPos((prev) => {
-      const nr = prev.r + dr;
-      const nc = prev.c + dc;
+    (async () => {
+      const Phaser = (await import('phaser')).default;
+      if (cancelled || !containerRef.current) return;
 
-      // Check map bounds
-      if (nr < 0 || nr >= LITTLEROOT_GRID.length || nc < 0 || nc >= LITTLEROOT_GRID[0].length) return prev;
+      game = createPhaserGame(Phaser, containerRef.current, { profile });
+      gameRef.current = game;
 
-      const tile = LITTLEROOT_GRID[nr][nc];
-      // Solid tiles check
-      if (tile === 'T' || tile === 'H') {
-        soundEffects.playErrorSound();
-        return prev;
-      }
-
-      // Partner follows previous player position!
-      setPartnerPos(prev);
-      soundEffects.playMoveSound();
-
-      // Check special interactive tiles
-      if (tile === 'B' || (nr === 2 && nc === 6)) {
-        setNpcPrompt("Press [A] to inspect Professor Birch's Starter Pokéballs!");
-        speakText("Press A to inspect Professor Birch's Starter Pokéballs!", 'oak');
-      } else if (tile === 'L') {
-        setNpcPrompt("Inside Professor Birch's Pokémon Research Lab!");
-      } else {
-        setNpcPrompt("Walking along the dirt paths of Littleroot Town...");
-      }
-
-      return { r: nr, c: nc };
-    });
-  }, []);
-
-  // Keyboard Arrow / WASD Controls
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') movePlayer(-1, 0, 'up');
-      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') movePlayer(1, 0, 'down');
-      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') movePlayer(0, -1, 'left');
-      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') movePlayer(0, 1, 'right');
-      if (e.key === 'Enter' || e.key === ' ') {
-        // Interact with tile in front
-        if (playerPos.r === 2 && playerPos.c === 6) {
-          onInteractPokeball();
+      // Capture scene reference when ready
+      const unsubReady = worldEvents.on('world:ready', (data) => {
+        if (cancelled) return;
+        setMapTitle(`${data.displayName} — HOENN`);
+        if (gameRef.current) {
+          sceneRef.current = gameRef.current.scene.getScene('OverworldScene');
         }
-      }
-    };
+      });
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [movePlayer, playerPos, onInteractPokeball]);
+      const unsubDialogue = worldEvents.on('dialogue:show', (data) => {
+        if (cancelled) return;
+        setDialogue(data.text);
+        if (data.speaker) {
+          speakText(data.text, data.speaker);
+        }
+      });
+
+      const unsubTrigger = worldEvents.on('trigger:activate', (data) => {
+        if (cancelled) return;
+        if (data.triggerId === 'birch_pokeball_table') {
+          setDialogue("Inspecting Professor Birch's Starter Pokéballs!");
+          speakText("Inspecting Professor Birch's Starter Pokéballs!", 'oak');
+          if (onInteractPokeball) {
+            onInteractPokeball();
+          }
+        }
+      });
+
+      return () => {
+        unsubReady();
+        unsubDialogue();
+        unsubTrigger();
+      };
+    })();
+
+    return () => {
+      cancelled = true;
+      if (gameRef.current) {
+        gameRef.current.destroy(true); // true = also remove canvas element
+        gameRef.current = null;
+      }
+      sceneRef.current = null;
+    };
+  }, []); // profile deliberately NOT a dependency to prevent tear down on ELO updates
+
+  // Push profile updates to scene if profile object changes
+  useEffect(() => {
+    if (sceneRef.current && profile) {
+      sceneRef.current.setProfile(profile);
+    }
+  }, [profile]);
 
   return (
     <div className="gba-map-wrapper font-poke animation-fade">
-      {/* Handheld Game Boy Console Outer Frame */}
       <div className="gba-console-shell littleroot-theme">
         <header className="gba-screen-header">
           <button className="btn-switch-nav font-poke" onClick={onBackToMenu}>
             ◄ MENU
           </button>
-          <span className="gba-game-title font-poke">🌿 LITTLEROOT TOWN — HOENN</span>
-          <button className="btn-audio-theme-toggle" onClick={() => playLittlerootTownTheme()}>
+          <span className="gba-game-title font-poke">🌿 {mapTitle}</span>
+          <button
+            className="btn-audio-theme-toggle"
+            onClick={() => sceneRef.current?.replayMusic()}
+          >
             🎵 Music
           </button>
           <span className="battery-led green" />
         </header>
 
-        {/* GBA 2D Tile Grid Canvas for Littleroot Town */}
-        <main className="gba-tile-grid littleroot-bg">
-          {LITTLEROOT_GRID.map((row, rIdx) => (
-            <div key={rIdx} className="grid-row">
-              {row.map((tile, cIdx) => {
-                const isPlayerHere = playerPos.r === rIdx && playerPos.c === cIdx;
-                const isPartnerHere = partnerPos.r === rIdx && partnerPos.c === cIdx;
-                const isPokeballTable = rIdx === 2 && cIdx === 6;
-
-                return (
-                  <div
-                    key={cIdx}
-                    className={`grid-tile tile-${tile} ${isPokeballTable ? 'pokeball-table-tile' : ''}`}
-                  >
-                    {/* Render Pokéball Table */}
-                    {isPokeballTable && (
-                      <div className="table-pokeballs-sprite" onClick={onInteractPokeball} title="Tap Pokéballs">
-                        🔴🔴🔴
-                      </div>
-                    )}
-
-                    {/* Render Player Trainer Sprite */}
-                    {isPlayerHere && (
-                      <img
-                        src={trainerAvatar}
-                        alt="Trainer"
-                        className={`player-grid-sprite dir-${facing}`}
-                      />
-                    )}
-
-                    {/* Render HeartGold Partner Sprite */}
-                    {isPartnerHere && !isPlayerHere && (
-                      <img
-                        src={partnerSprite}
-                        alt="Partner"
-                        className="partner-grid-sprite hgss-walk-bounce"
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </main>
+        {/* Phaser 3 GBA Viewport Host */}
+        <main className="gba-phaser-viewport" ref={containerRef} />
 
         {/* Dialogue Banner */}
         <div className="gba-dialogue-bar font-poke">
-          <p className="gba-prompt-text">{npcPrompt}</p>
+          <p className="gba-prompt-text">{dialogue}</p>
         </div>
 
         {/* On-Screen GBA D-Pad & Action Buttons */}
         <footer className="gba-controls-pad">
           <div className="dpad-cross">
-            <button className="dpad-btn up" onClick={() => movePlayer(-1, 0, 'up')}>▲</button>
-            <button className="dpad-btn left" onClick={() => movePlayer(0, -1, 'left')}>◄</button>
-            <button className="dpad-btn right" onClick={() => movePlayer(0, 1, 'right')}>►</button>
-            <button className="dpad-btn down" onClick={() => movePlayer(1, 0, 'down')}>▼</button>
+            <button
+              className="dpad-btn up"
+              onPointerDown={() => sceneRef.current?.setVirtualInput('up', true)}
+              onPointerUp={() => sceneRef.current?.setVirtualInput('up', false)}
+              onPointerLeave={() => sceneRef.current?.setVirtualInput('up', false)}
+            >
+              ▲
+            </button>
+            <button
+              className="dpad-btn left"
+              onPointerDown={() => sceneRef.current?.setVirtualInput('left', true)}
+              onPointerUp={() => sceneRef.current?.setVirtualInput('left', false)}
+              onPointerLeave={() => sceneRef.current?.setVirtualInput('left', false)}
+            >
+              ◄
+            </button>
+            <button
+              className="dpad-btn right"
+              onPointerDown={() => sceneRef.current?.setVirtualInput('right', true)}
+              onPointerUp={() => sceneRef.current?.setVirtualInput('right', false)}
+              onPointerLeave={() => sceneRef.current?.setVirtualInput('right', false)}
+            >
+              ►
+            </button>
+            <button
+              className="dpad-btn down"
+              onPointerDown={() => sceneRef.current?.setVirtualInput('down', true)}
+              onPointerUp={() => sceneRef.current?.setVirtualInput('down', false)}
+              onPointerLeave={() => sceneRef.current?.setVirtualInput('down', false)}
+            >
+              ▼
+            </button>
           </div>
 
           <div className="action-buttons-group">
             <button
               className="gba-action-btn btn-a font-poke"
-              onClick={() => {
-                if (playerPos.r === 2 && playerPos.c === 6) {
-                  onInteractPokeball();
-                } else {
-                  speakText("Walking in Littleroot Town! Step closer to Birch's Table!", 'oak');
-                }
-              }}
+              onClick={() => sceneRef.current?.pressA()}
             >
               [A] TALK / INTERACT
             </button>

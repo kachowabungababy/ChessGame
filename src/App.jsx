@@ -516,7 +516,7 @@ export default function App() {
         <GBATileMap
           profile={profile}
           onInteractPokeball={() => setShowStarterModal(true)}
-          onTriggerBirthday={() => setShowBirthdaySurprise(true)}
+          onProfileUpdate={setProfile}
           onBackToMenu={() => setView('home')}
         />
       );
