@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { speakText } from '../game/speechAudio';
 import { soundEffects } from '../game/audio';
+import { playLittlerootTownTheme, stopLittlerootTownTheme } from '../game/littlerootTheme';
 
-// 12x10 GBA Tile Map Grid for Pallet Town / Oak's Lab Area
-// T: Tree/Fence (solid), G: Grass (walkable), P: Path (walkable), H: House, L: Oak's Lab, B: Pokéball Table
-const MAP_GRID = [
+// 12x10 GBA Tile Map Grid for Hoenn - Littleroot Town
+// T: Hoenn Trees (solid), G: Grass/Flowers (walkable), P: Dirt Path (walkable), H: Brendan/May House, L: Prof. Birch's Lab, B: Starter Pokéball Table
+const LITTLEROOT_GRID = [
   ['T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T'],
   ['T', 'H', 'H', 'T', 'T', 'L', 'L', 'L', 'T', 'T', 'T', 'T'],
-  ['T', 'H', 'H', 'G', 'G', 'L', 'B', 'L', 'G', 'G', 'G', 'T'],
+  ['T', 'H', 'H', 'P', 'P', 'L', 'B', 'L', 'P', 'G', 'G', 'T'],
   ['T', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'G', 'T'],
   ['T', 'G', 'G', 'P', 'G', 'G', 'G', 'P', 'G', 'G', 'G', 'T'],
   ['T', 'G', 'G', 'P', 'P', 'P', 'P', 'P', 'G', 'G', 'G', 'T'],
@@ -16,14 +17,22 @@ const MAP_GRID = [
 ];
 
 export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirthday, onBackToMenu }) {
-  // Player grid position: starting in front of House (row 3, col 1)
+  // Player grid position: starting in front of Hoenn House (row 3, col 1)
   const [playerPos, setPlayerPos] = useState({ r: 3, c: 1 });
   const [facing, setFacing] = useState('down'); // 'up', 'down', 'left', 'right'
   const [partnerPos, setPartnerPos] = useState({ r: 3, c: 0 });
-  const [npcPrompt, setNpcPrompt] = useState('Use D-Pad or Arrow Keys to walk around Pallet Town!');
+  const [npcPrompt, setNpcPrompt] = useState('Welcome to Littleroot Town! Use D-Pad or Arrow Keys to walk to Prof. Birch\'s Lab!');
 
-  const trainerAvatar = profile?.avatarUrl || 'https://play.pokemonshowdown.com/sprites/trainers/red.png';
+  const trainerAvatar = profile?.avatarUrl || 'https://play.pokemonshowdown.com/sprites/trainers/brendan-gen3.png';
   const partnerSprite = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+
+  useEffect(() => {
+    // Play authentic GBA Littleroot Town Theme Music!
+    playLittlerootTownTheme();
+    return () => {
+      stopLittlerootTownTheme();
+    };
+  }, []);
 
   const movePlayer = useCallback((dr, dc, dir) => {
     setFacing(dir);
@@ -32,9 +41,9 @@ export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirth
       const nc = prev.c + dc;
 
       // Check map bounds
-      if (nr < 0 || nr >= MAP_GRID.length || nc < 0 || nc >= MAP_GRID[0].length) return prev;
+      if (nr < 0 || nr >= LITTLEROOT_GRID.length || nc < 0 || nc >= LITTLEROOT_GRID[0].length) return prev;
 
-      const tile = MAP_GRID[nr][nc];
+      const tile = LITTLEROOT_GRID[nr][nc];
       // Solid tiles check
       if (tile === 'T' || tile === 'H') {
         soundEffects.playErrorSound();
@@ -47,12 +56,12 @@ export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirth
 
       // Check special interactive tiles
       if (tile === 'B' || (nr === 2 && nc === 6)) {
-        setNpcPrompt("Press [A] to inspect Professor Oak's Starter Pokéballs!");
-        speakText("Press A to inspect Professor Oak's Starter Pokéballs!", 'oak');
+        setNpcPrompt("Press [A] to inspect Professor Birch's Starter Pokéballs!");
+        speakText("Press A to inspect Professor Birch's Starter Pokéballs!", 'oak');
       } else if (tile === 'L') {
-        setNpcPrompt("Inside Professor Oak's Pokémon Research Lab!");
+        setNpcPrompt("Inside Professor Birch's Pokémon Research Lab!");
       } else {
-        setNpcPrompt("Walking around Pallet Town...");
+        setNpcPrompt("Walking along the dirt paths of Littleroot Town...");
       }
 
       return { r: nr, c: nc };
@@ -81,18 +90,21 @@ export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirth
   return (
     <div className="gba-map-wrapper font-poke animation-fade">
       {/* Handheld Game Boy Console Outer Frame */}
-      <div className="gba-console-shell">
+      <div className="gba-console-shell littleroot-theme">
         <header className="gba-screen-header">
           <button className="btn-switch-nav font-poke" onClick={onBackToMenu}>
             ◄ MENU
           </button>
-          <span className="gba-game-title font-poke">PALLET TOWN — GBA TILE MAP</span>
+          <span className="gba-game-title font-poke">🌿 LITTLEROOT TOWN — HOENN</span>
+          <button className="btn-audio-theme-toggle" onClick={() => playLittlerootTownTheme()}>
+            🎵 Music
+          </button>
           <span className="battery-led green" />
         </header>
 
-        {/* GBA 2D Tile Grid Canvas */}
-        <main className="gba-tile-grid">
-          {MAP_GRID.map((row, rIdx) => (
+        {/* GBA 2D Tile Grid Canvas for Littleroot Town */}
+        <main className="gba-tile-grid littleroot-bg">
+          {LITTLEROOT_GRID.map((row, rIdx) => (
             <div key={rIdx} className="grid-row">
               {row.map((tile, cIdx) => {
                 const isPlayerHere = playerPos.r === rIdx && playerPos.c === cIdx;
@@ -156,7 +168,7 @@ export default function GBATileMap({ profile, onInteractPokeball, onTriggerBirth
                 if (playerPos.r === 2 && playerPos.c === 6) {
                   onInteractPokeball();
                 } else {
-                  speakText("Stepping around Pallet Town! Move closer to Oak's Table!", 'oak');
+                  speakText("Walking in Littleroot Town! Step closer to Birch's Table!", 'oak');
                 }
               }}
             >

@@ -4367,3 +4367,185 @@ body {
   line-height: 1.4;
 }
 
+/* ========================================= */
+/* GBA 2D TILE MAP & HOENN LITTLEROOT TOWN   */
+/* ========================================= */
+
+.gba-map-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 85vh;
+  padding: 1rem;
+}
+
+.gba-console-shell {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 4px solid var(--accent-gold);
+  border-radius: 28px;
+  padding: 1.5rem;
+  width: min(96vw, 680px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(245, 158, 11, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gba-console-shell.littleroot-theme {
+  border-color: #22c55e;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(34, 197, 94, 0.4);
+}
+
+.gba-screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid #475569;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.gba-game-title {
+  font-size: 0.75rem;
+  color: #4ade80;
+}
+
+.btn-audio-theme-toggle {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.gba-tile-grid {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  border: 3px solid #14532d;
+  border-radius: 18px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.grid-row {
+  display: flex;
+  gap: 2px;
+}
+
+.grid-tile {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tile-T { background: #14532d; border: 1px solid #052e16; } /* Tree */
+.tile-H { background: #9a3412; border: 1px solid #431407; } /* House */
+.tile-L { background: #0369a1; border: 1px solid #0c4a6e; } /* Lab */
+.tile-P { background: #d97706; border: 1px solid #78350f; } /* Path */
+.tile-G { background: #15803d; border: 1px solid #166534; } /* Grass */
+
+.pokeball-table-tile {
+  background: #f59e0b !important;
+  border: 2px solid #b45309 !important;
+  cursor: pointer;
+}
+
+.table-pokeballs-sprite {
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  animation: envPulse 1.2s ease-in-out infinite;
+}
+
+.player-grid-sprite {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+  z-index: 10;
+}
+
+.partner-grid-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  z-index: 8;
+}
+
+.gba-dialogue-bar {
+  background: rgba(15, 23, 42, 0.9);
+  border: 2px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.gba-prompt-text {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 0.88rem;
+  color: #ffffff;
+  margin: 0;
+}
+
+.gba-controls-pad {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+}
+
+.dpad-cross {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.dpad-btn {
+  position: absolute;
+  background: #334155;
+  border: 2px solid #64748b;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dpad-btn.up { top: 0; left: 34px; }
+.dpad-btn.down { bottom: 0; left: 34px; }
+.dpad-btn.left { top: 34px; left: 0; }
+.dpad-btn.right { top: 34px; right: 0; }
+
+.dpad-btn:active {
+  background: var(--accent-gold);
+  color: #0f172a;
+}
+
+.gba-action-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: 2px solid #f87171;
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+
+.gba-action-btn:hover {
+  transform: scale(1.05);
+}
+
