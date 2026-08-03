@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "copy:stockfish": "node scripts/copy-stockfish.mjs"
+    "copy:stockfish": "node scripts/copy-stockfish.mjs",
+    "audit:puzzles": "node scripts/audit-wild-puzzles.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",

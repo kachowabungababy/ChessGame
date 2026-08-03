@@ -2308,6 +2308,34 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
+.password-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrap .trainer-handle-input {
+  padding-right: 44px;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-password:hover {
+  color: var(--accent-gold);
+}
+
 .form-actions {
   margin-top: 0.75rem;
   width: 100%;
@@ -2656,6 +2684,16 @@ body {
   padding: 4px 10px;
   border-radius: 8px;
   font-size: 0.72rem;
+}
+
+.puzzle-steps-pill {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid #60a5fa;
+  color: #93c5fd;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .wild-encounter-banner {
@@ -4482,6 +4520,12 @@ body {
   cursor: pointer;
 }
 
+.btn-audio-theme-toggle.is-muted {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: #64748b;
+  color: #94a3b8;
+}
+
 .gba-phaser-viewport {
   aspect-ratio: 3 / 2;
   width: 100%;
@@ -4959,4 +5003,148 @@ body {
   color: var(--text-muted);
   font-size: 0.85rem;
   font-style: italic;
+}
+
+/* ===== Wild Puzzle Difficulty Pill ===== */
+.puzzle-difficulty-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.difficulty-easy {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid #4ade80;
+}
+
+.difficulty-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+
+.difficulty-hard {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border: 1px solid #f87171;
+}
+
+/* ===== 3 Cups Color Picker ===== */
+.cups-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  background: rgba(5, 10, 20, 0.92);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.cups-picker-card {
+  background: var(--panel-bg);
+  border: 3px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 2rem;
+  width: min(94vw, 560px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.4);
+}
+
+.cups-title {
+  color: var(--accent-gold);
+  font-size: 1.2rem;
+}
+
+.cups-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.cups-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.cup-slot {
+  flex: 1;
+  max-width: 140px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid #475569;
+  border-radius: 16px;
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cup-slot:hover:not(:disabled) {
+  border-color: var(--accent-gold);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.cup-slot:disabled {
+  cursor: default;
+}
+
+.cup-slot.dimmed {
+  opacity: 0.35;
+}
+
+.cup-slot.revealed {
+  border-color: var(--accent-gold);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.cup-icon-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.cup-result-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.cup-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cup-result-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cup-toss-text {
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+}
+
+.cup-result-text {
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.cups-back-btn {
+  margin-top: 0.5rem;
 }

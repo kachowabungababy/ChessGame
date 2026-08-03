@@ -5,7 +5,9 @@ import { soundEffects } from './game/audio';
 import { ARENA_THEMES } from './game/themes';
 import { getStoredProfile, createProfile, recordMatchResult, recordCaughtPokemon, saveProfile, AVATAR_OPTIONS } from './game/profileStorage';
 import { getLineupForStage } from './game/pokemonLineups';
-import { WILD_POKEMON_PUZZLES } from './game/wildPuzzles';
+import { pickWeightedWildPuzzle } from './game/wildPuzzles';
+import { getStagesForTier } from './game/storyCampaign';
+import { mirrorFenToBlackToMove, mirrorSolutionMove, mirrorSolutionMoves, canMirrorPuzzleToBlack, mirrorPromptText } from './game/chessMirror';
 import { subscribeLobbyGame, pushLobbyMove } from './game/lobbyStore';
 import HomePage from './components/HomePage';
 import Board from './components/Board';
@@ -19,6 +21,7 @@ import TrainerLoginModal from './components/TrainerLoginModal';
 import StoryMap from './components/StoryMap';
 import PikachuCoachBanner from './components/PikachuCoachBanner';
 import WildPuzzleScreen from './components/WildPuzzleScreen';
+import CupsColorPicker from './components/CupsColorPicker';
 import PokedexModal from './components/PokedexModal';
 import EvolutionOverlay from './components/EvolutionOverlay';
 import StarterSelectionModal from './components/StarterSelectionModal';
@@ -480,14 +483,31 @@ export default function App() {
 
   const [activeWildPuzzle, setActiveWildPuzzle] = useState(null);
   const [showPokedexModal, setShowPokedexModal] = useState(false);
+  const [pendingStoryStage, setPendingStoryStage] = useState(null);
 
   const handleSelectStoryStage = (stage) => {
-    setActiveStoryStage(stage);
+    setPendingStoryStage(stage);
+  };
+
+  // Walking up to a trainer NPC in the overworld emits { stageId } — look up the matching
+  // story stage (with ELO scaled for the player's current tier) and route it through the
+  // same pending-stage/cups flow as the legacy Story Map stage list.
+  const handleTrainerBattle = (stageId) => {
+    const stages = getStagesForTier(profile?.difficultyTier || 'rookie');
+    const stage = stages.find((s) => s.id === stageId);
+    if (!stage) return;
+    setPendingStoryStage(stage);
+  };
+
+  const handleCupsColorChosen = (color) => {
+    if (!pendingStoryStage) return;
+    setActiveStoryStage(pendingStoryStage);
     setGameMode('ai');
-    setAiElo(stage.elo);
-    setPlayerColor('w');
-    if (stage.theme) setTheme(stage.theme);
+    setAiElo(pendingStoryStage.elo);
+    setPlayerColor(color);
+    if (pendingStoryStage.theme) setTheme(pendingStoryStage.theme);
     handleResetGame();
+    setPendingStoryStage(null);
     setView('game');
   };
 
@@ -532,10 +552,28 @@ export default function App() {
   };
 
   const handleWildEncounter = (region) => {
-    const candidates = WILD_POKEMON_PUZZLES.filter((p) => p.region === region);
-    if (candidates.length === 0) return;
-    const puzzle = candidates[Math.floor(Math.random() * candidates.length)];
-    setActiveWildPuzzle(puzzle);
+    const puzzle = pickWeightedWildPuzzle(region);
+    if (!puzzle) return;
+    // Flat 50/50 color roll, but only mirror to Black if the mirror is verified safe for
+    // this specific puzzle (some sparse endgame-style puzzles can't mirror cleanly — see
+    // chessMirror.js). Falls back to White for those rather than risk an unsolvable puzzle.
+    const wantsBlack = Math.random() < 0.5;
+    const assignedColor = wantsBlack && canMirrorPuzzleToBlack(puzzle) ? 'b' : 'w';
+    const finalPuzzle =
+      assignedColor === 'b'
+        ? {
+            ...puzzle,
+            fen: mirrorFenToBlackToMove(puzzle.fen),
+            solutionMove: puzzle.solutionMove ? mirrorSolutionMove(puzzle.solutionMove) : undefined,
+            solutionMoves: puzzle.solutionMoves ? mirrorSolutionMoves(puzzle.solutionMoves) : undefined,
+            prompt: mirrorPromptText(puzzle.prompt),
+            coachHint: mirrorPromptText(puzzle.coachHint),
+            stepHints: puzzle.stepHints ? puzzle.stepHints.map(mirrorPromptText) : undefined,
+            rewardText: mirrorPromptText(puzzle.rewardText),
+            assignedColor,
+          }
+        : { ...puzzle, assignedColor };
+    setActiveWildPuzzle(finalPuzzle);
   };
 
   const handleSelectStarter = (starterId) => {
@@ -642,6 +680,16 @@ export default function App() {
     );
   }
 
+  if (pendingStoryStage) {
+    return (
+      <CupsColorPicker
+        stage={pendingStoryStage}
+        onColorChosen={handleCupsColorChosen}
+        onCancel={() => setPendingStoryStage(null)}
+      />
+    );
+  }
+
   if (view === 'lobby') {
     return (
       <OnlineLobbyScreen
@@ -660,6 +708,7 @@ export default function App() {
           onInteractPokeball={() => setShowStarterModal(true)}
           onWildEncounter={handleWildEncounter}
           onBirthdayNpcTalk={handleBirthdayNpcTalk}
+          onTrainerBattle={handleTrainerBattle}
           onProfileUpdate={setProfile}
           onBackToMenu={() => setView('home')}
         />

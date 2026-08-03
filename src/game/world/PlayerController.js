@@ -4,27 +4,21 @@ import { worldEvents } from './worldEvents';
 import { DEFAULT_MAP_ID } from './mapRegistry';
 
 export class PlayerController {
-  constructor(scene, sprite, tileX, tileY, facing = 'down', followerController = null, mapData = null) {
+  constructor(scene, sprite, tileX, tileY, facing = 'down', mapData = null) {
     this.scene = scene;
     this.sprite = sprite;
     this.tileX = tileX;
     this.tileY = tileY;
     this.facing = facing;
-    this.followerController = followerController;
     this.mapData = mapData;
 
     this.isMoving = false;
     this.isTurning = false;
-    this.queuedDir = null;
 
     // Position sprite at initial pixel coordinates
     this.sprite.setPosition(tileToPx(tileX), tileToPx(tileY));
     this.sprite.setFlipX(facing === 'right');
     this.playIdleAnim();
-  }
-
-  setFollower(follower) {
-    this.followerController = follower;
   }
 
   setMapData(mapData) {
@@ -35,22 +29,25 @@ export class PlayerController {
     const f = this.facing === 'right' ? 'left' : this.facing;
     this.sprite.setFlipX(this.facing === 'right');
     this.sprite.anims.stop();
-    this.sprite.setTexture('player_sheet', f === 'down' ? 0 : f === 'up' ? 3 : 6);
+    this.sprite.setTexture(this.sprite.texture.key, f === 'down' ? 0 : f === 'up' ? 9 : 3);
   }
 
   playWalkAnim() {
     const f = this.facing === 'right' ? 'left' : this.facing;
     this.sprite.setFlipX(this.facing === 'right');
-    this.sprite.play(`player_walk_${f}`, true);
+    this.sprite.play(`${this.sprite.texture.key}_walk_${f}`, true);
   }
 
-  tryMove(dir) {
+  tryMove(dir, running = false) {
     if (!DIRS[dir]) return 'invalid';
 
-    // If mid-move, queue next direction for smooth continuous walking
-    if (this.isMoving) {
-      this.queuedDir = dir;
-      return 'queued';
+    // Mid-move or mid-turn: ignore. The caller polls every frame, so the
+    // next tile/turn starts on its own as soon as this one finishes — no
+    // need to remember a stale direction from an earlier frame (that was
+    // causing an extra tile of movement after the key had already been
+    // released).
+    if (this.isMoving || this.isTurning) {
+      return 'busy';
     }
 
     // Turn in place if not facing direction
@@ -61,11 +58,6 @@ export class PlayerController {
 
       this.scene.time.delayedCall(TURN_MS, () => {
         this.isTurning = false;
-        if (this.queuedDir) {
-          const next = this.queuedDir;
-          this.queuedDir = null;
-          this.tryMove(next);
-        }
       });
       return 'turned';
     }
@@ -80,18 +72,10 @@ export class PlayerController {
       return 'blocked';
     }
 
-    // Capture previous position for follower breadcrumb trail BEFORE updating tile state
-    const prevTile = { x: this.tileX, y: this.tileY, facing: this.facing };
-
     // Update logical position immediately (authoritative state)
     this.tileX = targetX;
     this.tileY = targetY;
     this.isMoving = true;
-
-    // Notify follower controller of player move step
-    if (this.followerController) {
-      this.followerController.onPlayerStep(prevTile);
-    }
 
     this.playWalkAnim();
 
@@ -100,7 +84,7 @@ export class PlayerController {
       targets: this.sprite,
       x: tileToPx(targetX),
       y: tileToPx(targetY),
-      duration: WALK_MS,
+      duration: running ? WALK_MS / 2 : WALK_MS,
       ease: 'Linear',
       onComplete: () => {
         this.isMoving = false;
@@ -113,13 +97,6 @@ export class PlayerController {
           y: this.tileY,
           facing: this.facing,
         });
-
-        // Process continuous queued holding input
-        if (this.queuedDir) {
-          const next = this.queuedDir;
-          this.queuedDir = null;
-          this.tryMove(next);
-        }
       },
     });
 

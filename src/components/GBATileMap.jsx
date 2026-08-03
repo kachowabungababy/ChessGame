@@ -2,20 +2,33 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPhaserGame } from '../game/world/createPhaserGame';
 import { worldEvents } from '../game/world/worldEvents';
 import { speakText } from '../game/speechAudio';
+import { stopLittlerootTownTheme } from '../game/littlerootTheme';
+
+// This component imperatively owns a live Phaser Game instance created in a `[]`-dep
+// effect (so React Fast Refresh never re-runs it). Without this, editing anything this
+// file imports (the overworld scenes, the player controller, the music module) gets
+// hot-patched in place by default, leaving a stale Phaser game + input manager running
+// alongside whatever the new module graph expects — duplicate keyboard listeners,
+// duplicate music, dead controls. Force a full reload instead for this whole subtree.
+if (import.meta.hot) {
+  import.meta.hot.decline();
+}
 
 export default function GBATileMap({
   profile,
   onInteractPokeball,
   onWildEncounter,
   onBirthdayNpcTalk,
+  onTrainerBattle,
   onBackToMenu,
   onProfileUpdate,
 }) {
   const containerRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);
-  const [dialogue, setDialogue] = useState('Welcome to Sunroot Town! Walk over to the Pokéball Table to choose your team!');
-  const [mapTitle, setMapTitle] = useState('SUNROOT TOWN');
+  const [dialogue, setDialogue] = useState('Welcome to Cotton Town! Walk over to the Pokéball Table to choose your team!');
+  const [mapTitle, setMapTitle] = useState('COTTON TOWN');
+  const [musicOn, setMusicOn] = useState(true);
 
   // Mount/destroy Phaser — StrictMode-safe lifecycle
   useEffect(() => {
@@ -68,16 +81,33 @@ export default function GBATileMap({
         }
       });
 
+      const unsubProfileSync = worldEvents.on('profile:worldUpdated', (data) => {
+        if (cancelled) return;
+        if (onProfileUpdate) {
+          onProfileUpdate(data.profile);
+        }
+      });
+
+      const unsubTrainerBattle = worldEvents.on('trainer:battle', (data) => {
+        if (cancelled) return;
+        if (onTrainerBattle) {
+          onTrainerBattle(data.stageId);
+        }
+      });
+
       return () => {
         unsubReady();
         unsubDialogue();
         unsubTrigger();
         unsubEncounter();
+        unsubProfileSync();
+        unsubTrainerBattle();
       };
     })();
 
     return () => {
       cancelled = true;
+      stopLittlerootTownTheme();
       if (gameRef.current) {
         gameRef.current.destroy(true); // true = also remove canvas element
         gameRef.current = null;
@@ -102,10 +132,17 @@ export default function GBATileMap({
           </button>
           <span className="gba-game-title font-poke">🌿 {mapTitle}</span>
           <button
-            className="btn-audio-theme-toggle"
-            onClick={() => sceneRef.current?.replayMusic()}
+            className={`btn-audio-theme-toggle${musicOn ? '' : ' is-muted'}`}
+            onClick={() => {
+              if (musicOn) {
+                stopLittlerootTownTheme();
+              } else {
+                sceneRef.current?.replayMusic();
+              }
+              setMusicOn(!musicOn);
+            }}
           >
-            🎵 Music
+            {musicOn ? '🎵 Music' : '🔇 Muted'}
           </button>
           <span className="battery-led green" />
         </header>

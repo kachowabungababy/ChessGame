@@ -2,8 +2,6 @@ import Phaser from 'phaser';
 import { TILE, tileToPx, DIRS } from '../worldConstants';
 import { getMapDef } from '../mapRegistry';
 import { PlayerController } from '../PlayerController';
-import { FollowerController } from '../FollowerController';
-import { resolveFollowerSpecies, OW_POKEMON } from '../overworldSprites';
 import { getWorldSpawn, updateWorldPosition } from '../../profileStorage';
 import { worldEvents } from '../worldEvents';
 import { speakText } from '../../speechAudio';
@@ -29,10 +27,16 @@ export class OverworldScene extends Phaser.Scene {
 
     this.mapDef = mapDef;
 
+    // Wild-encounter pacing: a flat per-step chance felt relentless in a tall-grass zone
+    // (constant back-to-back battles). `encounterStreak` decays the chance every time an
+    // encounter just fired, and recovers the longer the player walks without one — plus a
+    // hard cooldown guarantees a few safe steps right after any encounter.
+    this.stepsSinceEncounter = Infinity;
+    this.encounterStreak = 0;
+
     // Create Tilemap
     this.map = this.make.tilemap({ key: mapDef.id });
-    const tsTownOutdoor = this.map.addTilesetImage('town_outdoor', 'ts_town_outdoor');
-    const tilesets = [tsTownOutdoor];
+    const tilesets = mapDef.tilesets.map((ts) => this.map.addTilesetImage(ts.tiledName, ts.key));
 
     // 4 Tile Layers per Contract
     this.groundLayer = this.map.createLayer('ground', tilesets, 0, 0);
@@ -53,18 +57,6 @@ export class OverworldScene extends Phaser.Scene {
     this.playerSprite = this.add.sprite(tileToPx(safeSpawn.x), tileToPx(safeSpawn.y), avatarKey, 0);
     this.playerSprite.setDepth(this.playerSprite.y);
 
-    // Resolve & Create Follower Sprite
-    const speciesKey = resolveFollowerSpecies(this.profile);
-    const followerSheetKey = OW_POKEMON[speciesKey]?.key || 'ow_pikachu';
-    this.followerSprite = this.add.sprite(tileToPx(safeSpawn.x), tileToPx(safeSpawn.y), followerSheetKey, 0);
-
-    this.followerController = new FollowerController(
-      this,
-      this.followerSprite,
-      { x: safeSpawn.x, y: safeSpawn.y, facing: safeSpawn.facing },
-      speciesKey
-    );
-
     // Create Player Controller
     this.playerController = new PlayerController(
       this,
@@ -72,7 +64,6 @@ export class OverworldScene extends Phaser.Scene {
       safeSpawn.x,
       safeSpawn.y,
       safeSpawn.facing,
-      this.followerController,
       {
         id: mapDef.id,
         mapWidth: this.map.width,
@@ -89,14 +80,21 @@ export class OverworldScene extends Phaser.Scene {
     // Keyboard Inputs
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = this.input.keyboard.addKeys('W,A,S,D');
+    this.keyRun = this.input.keyboard.addKey('X'); // GBA B button — hold to run
+    this.input.keyboard.addKey('SPACE').on('down', () => this.pressA()); // GBA A button
 
-    // Parse Object Layers (Warps, Triggers, NPCs)
+    // Parse Object Layers (Warps, Triggers, Encounters, NPCs)
     this.parseObjectLayers();
+    this.spawnNpcTrainers();
 
     // Listen to player move events for persistence & triggers
     worldEvents.on('player:moved', (pos) => {
       if (this.profile) {
-        updateWorldPosition(this.profile, pos.mapId, pos.x, pos.y, pos.facing);
+        // Keep this scene's own profile reference current, and tell React so
+        // profile.world stays live — otherwise an interruption that unmounts
+        // the map (e.g. a wild encounter) would respawn from a stale position.
+        this.profile = updateWorldPosition(this.profile, pos.mapId, pos.x, pos.y, pos.facing);
+        worldEvents.emit('profile:worldUpdated', { profile: this.profile });
       }
       this.checkEnterTriggers(pos.x, pos.y);
     });
@@ -114,27 +112,25 @@ export class OverworldScene extends Phaser.Scene {
   update() {
     if (!this.playerController) return;
 
-    // Follower Depth Sorting
-    if (this.followerController) {
-      this.followerController.updateDepth(this.playerSprite.y);
-    }
+    // Process continuous movement input — physical keys take priority, falling back to
+    // a held on-screen d-pad button so touch/click controls also support continuous walk
+    const running = this.keyRun?.isDown || false;
+    const dir = this.cursors.up.isDown || this.wasd.W.isDown ? 'up'
+      : this.cursors.down.isDown || this.wasd.S.isDown ? 'down'
+      : this.cursors.left.isDown || this.wasd.A.isDown ? 'left'
+      : this.cursors.right.isDown || this.wasd.D.isDown ? 'right'
+      : this.virtualDir;
 
-    // Process continuous movement input
-    if (this.cursors.up.isDown || this.wasd.W.isDown) {
-      this.playerController.tryMove('up');
-    } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
-      this.playerController.tryMove('down');
-    } else if (this.cursors.left.isDown || this.wasd.A.isDown) {
-      this.playerController.tryMove('left');
-    } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
-      this.playerController.tryMove('right');
-    }
+    if (dir) this.playerController.tryMove(dir, running);
   }
 
   setVirtualInput(dir, isDown) {
     if (!this.playerController) return;
     if (isDown) {
+      this.virtualDir = dir;
       this.playerController.tryMove(dir);
+    } else if (this.virtualDir === dir) {
+      this.virtualDir = null;
     }
   }
 
@@ -145,6 +141,10 @@ export class OverworldScene extends Phaser.Scene {
     const { dx, dy } = DIRS[facing] || DIRS.down;
     const frontX = tileX + dx;
     const frontY = tileY + dy;
+
+    // Trainer NPCs take priority over generic interact triggers on the same tile
+    const talkedToTrainer = this.checkNpcInteract(frontX, frontY);
+    if (talkedToTrainer) return;
 
     // Check interact triggers on tile in front
     const triggered = this.checkInteractTriggers(frontX, frontY);
@@ -197,6 +197,7 @@ export class OverworldScene extends Phaser.Scene {
     this.warps = [];
     this.triggers = [];
     this.encounters = [];
+    this.npcTrainers = [];
 
     const encounterObjects = this.map.getObjectLayer('encounters')?.objects || [];
     encounterObjects.forEach((obj) => {
@@ -238,14 +239,72 @@ export class OverworldScene extends Phaser.Scene {
         y: ty,
         mode: getProp('mode') || 'interact',
         triggerId: getProp('triggerId') || obj.name,
+        dialogue: getProp('dialogue') || null,
       });
     });
+
+    const npcObjects = this.map.getObjectLayer('npcs')?.objects || [];
+    npcObjects.forEach((obj) => {
+      const tx = Math.floor(obj.x / TILE);
+      const ty = Math.floor(obj.y / TILE);
+      const getProp = (name) => obj.properties?.find((p) => p.name === name)?.value;
+
+      this.npcTrainers.push({
+        x: tx,
+        y: ty,
+        npcId: getProp('npcId') || obj.name,
+        sheetKey: getProp('sheetKey') || 'npc_birch',
+        facing: getProp('facing') || 'down',
+        stageId: getProp('stageId'),
+        requiresStage: getProp('requiresStage') || 1,
+      });
+    });
+  }
+
+  // Places a static sprite for each trainer NPC and marks its tile solid (so the player
+  // can't walk through it), reusing the existing hidden collision layer for blocking rather
+  // than teaching PlayerController a new "occupied by actor" concept.
+  spawnNpcTrainers() {
+    this.npcSprites = {};
+    this.npcTrainers.forEach((npc) => {
+      if (!this.textures.exists(npc.sheetKey)) return;
+      const idleFacing = npc.facing === 'right' ? 'left' : npc.facing;
+      const frame = idleFacing === 'down' ? 0 : idleFacing === 'up' ? 9 : 3;
+      const sprite = this.add.sprite(tileToPx(npc.x), tileToPx(npc.y), npc.sheetKey, frame);
+      sprite.setFlipX(npc.facing === 'right');
+      sprite.setDepth(sprite.y);
+      this.npcSprites[npc.npcId] = sprite;
+
+      if (this.collisionLayer) {
+        this.collisionLayer.putTileAt(1, npc.x, npc.y);
+      }
+    });
+  }
+
+  checkNpcInteract(x, y) {
+    const npc = this.npcTrainers.find((n) => n.x === x && n.y === y);
+    if (!npc) return false;
+
+    const userStage = this.profile?.unlockedStage ?? 1;
+    if (userStage < npc.requiresStage) {
+      const lockedText = "This trainer isn't ready to battle you yet — come back later!";
+      worldEvents.emit('dialogue:show', { text: lockedText, speaker: 'oak' });
+      speakText(lockedText, 'oak');
+      return true;
+    }
+
+    worldEvents.emit('trainer:battle', { npcId: npc.npcId, stageId: npc.stageId });
+    return true;
   }
 
   checkInteractTriggers(x, y) {
     const hitTrigger = this.triggers.find((t) => t.x === x && t.y === y && t.mode === 'interact');
     if (hitTrigger) {
       worldEvents.emit('trigger:activate', { triggerId: hitTrigger.triggerId });
+      if (hitTrigger.dialogue) {
+        worldEvents.emit('dialogue:show', { text: hitTrigger.dialogue, speaker: 'oak' });
+        speakText(hitTrigger.dialogue, 'oak');
+      }
       return true;
     }
     return false;
@@ -268,11 +327,36 @@ export class OverworldScene extends Phaser.Scene {
       return;
     }
 
-    // Classic "tall grass" wild encounter roll
+    // Classic "tall grass" wild encounter roll — see the pacing constants below for why
+    // this isn't just a flat chance per step.
     const zone = this.encounters.find(
       (e) => x >= e.x && x < e.x + e.w && y >= e.y && y < e.y + e.h
     );
-    if (zone && Math.random() < 0.25) {
+
+    if (!zone) {
+      this.encounterStreak = 0; // leaving the grass fully resets the heat
+      return;
+    }
+
+    this.stepsSinceEncounter += 1;
+
+    const MIN_STEPS_BETWEEN_ENCOUNTERS = 3; // guaranteed safe steps right after a battle
+    const BASE_ENCOUNTER_RATE = 0.12;
+    const ENCOUNTER_RATE_DECAY = 0.6; // each recent encounter multiplies the chance by this
+    const MIN_ENCOUNTER_RATE = 0.03;
+    const STEPS_TO_COOL_DOWN = 8; // steps walked with no encounter before the streak eases off
+
+    if (this.stepsSinceEncounter < MIN_STEPS_BETWEEN_ENCOUNTERS) return;
+
+    if (this.stepsSinceEncounter > STEPS_TO_COOL_DOWN) {
+      const coolTicks = Math.floor((this.stepsSinceEncounter - MIN_STEPS_BETWEEN_ENCOUNTERS) / STEPS_TO_COOL_DOWN);
+      this.encounterStreak = Math.max(0, this.encounterStreak - coolTicks);
+    }
+
+    const chance = Math.max(MIN_ENCOUNTER_RATE, BASE_ENCOUNTER_RATE * ENCOUNTER_RATE_DECAY ** this.encounterStreak);
+    if (Math.random() < chance) {
+      this.encounterStreak += 1;
+      this.stepsSinceEncounter = 0;
       worldEvents.emit('encounter:wild', { region: zone.region });
     }
   }

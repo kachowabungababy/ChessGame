@@ -2,11 +2,33 @@ import React, { useState } from 'react';
 import { AVATAR_OPTIONS, fetchProfileFromSupabase } from '../game/profileStorage';
 import { speakText } from '../game/speechAudio';
 
+const EYE_ICON_PATH = 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z';
+const EYE_OFF_ICON_PATH =
+  'M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24 M1 1l22 22';
+
+function EyeIcon({ d, size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
 export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
   const [authMode, setAuthMode] = useState('signup'); // 'signup', 'signin', 'guest'
   const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'boy', 'girl'
   const [handle, setHandle] = useState(currentProfile?.handle || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [avatarId, setAvatarId] = useState(currentProfile?.avatarId || 'ash');
   const [rememberMe, setRememberMe] = useState(
     currentProfile?.rememberMe !== undefined ? currentProfile.rememberMe : true
@@ -218,15 +240,26 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
 
               <div className="form-group">
                 <label className="form-label">3. Create Secret Trainer Password:</label>
-                <input
-                  type="password"
-                  className="trainer-handle-input"
-                  placeholder="Create secret password..."
-                  maxLength={24}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="password-input-wrap">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="trainer-handle-input"
+                    placeholder="Create secret password..."
+                    maxLength={24}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="btn-toggle-password"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <EyeIcon d={showPassword ? EYE_ICON_PATH : EYE_OFF_ICON_PATH} size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Remember Me Checkbox */}
@@ -275,15 +308,25 @@ export default function TrainerLoginModal({ onLogin, currentProfile = null }) {
 
             <div className="form-group">
               <label className="form-label">Trainer Secret Password:</label>
-              <input
-                type="password"
-                className="trainer-handle-input"
-                placeholder="Enter Trainer Password..."
-                maxLength={24}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="password-input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="trainer-handle-input"
+                  placeholder="Enter Trainer Password..."
+                  maxLength={24}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn-toggle-password"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <div className="form-actions font-poke">

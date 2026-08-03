@@ -1,15 +1,37 @@
 // Web Audio API Synthesizer playing the iconic 8-bit GBA Littleroot Town Theme from Pokémon Ruby/Sapphire/Emerald
 
+// This module holds live singleton state (an AudioContext + a "should I keep looping"
+// flag). Vite's HMR hot-swaps modules in place by default, which would leave the OLD
+// loop running against OLD state while a second, independent copy of this module's
+// singletons spins up — i.e. two overlapping music loops. Force a full page reload
+// instead of a hot-patch whenever this file changes.
+if (import.meta.hot) {
+  import.meta.hot.decline();
+}
+
+let ctx = null;
 let activeOscillators = [];
 let isThemePlaying = false;
+let stopRequested = false;
+
+function getCtx() {
+  if (!ctx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) ctx = new AudioCtx();
+  }
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
+  }
+  return ctx;
+}
 
 export function playLittlerootTownTheme() {
   if (isThemePlaying) return;
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    const audioCtx = getCtx();
+    if (!audioCtx) return;
     isThemePlaying = true;
+    stopRequested = false;
 
     // Frequencies mapping for Littleroot Town melody notes (D Major / G Major key)
     const notes = {
@@ -24,14 +46,14 @@ export function playLittlerootTownTheme() {
       ['B4', 0.5], ['Cs5', 0.5], ['D5', 1.0], ['A4', 1.0], ['Fs4', 0.5], ['E4', 0.5], ['D4', 2.0],
     ];
 
-    let startTime = ctx.currentTime + 0.1;
+    let startTime = audioCtx.currentTime + 0.1;
     const tempo = 0.42; // Peaceful GBA tempo
 
     melody.forEach(([noteName, beats]) => {
       const freq = notes[noteName];
       if (freq) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
         // GBA Warm Sine/Triangle Chiptune Lead
         osc.type = 'sine';
@@ -41,7 +63,7 @@ export function playLittlerootTownTheme() {
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + beats * tempo - 0.04);
 
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(audioCtx.destination);
 
         osc.start(startTime);
         osc.stop(startTime + beats * tempo);
@@ -51,11 +73,12 @@ export function playLittlerootTownTheme() {
       startTime += beats * tempo;
     });
 
-    // Loop Theme
-    const totalDuration = startTime - ctx.currentTime;
+    // Loop Theme — keep replaying until stopLittlerootTownTheme() is called
+    const totalDuration = startTime - audioCtx.currentTime;
     setTimeout(() => {
       isThemePlaying = false;
-      if (isThemePlaying) playLittlerootTownTheme();
+      activeOscillators = [];
+      if (!stopRequested) playLittlerootTownTheme();
     }, totalDuration * 1000);
 
   } catch (e) {
@@ -64,6 +87,7 @@ export function playLittlerootTownTheme() {
 }
 
 export function stopLittlerootTownTheme() {
+  stopRequested = true;
   isThemePlaying = false;
   activeOscillators.forEach((osc) => {
     try {

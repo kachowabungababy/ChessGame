@@ -5,7 +5,6 @@ export const GBA_W = 240;
 export const GBA_H = 160;
 export const WALK_MS = 180; // ~Emerald walk speed
 export const TURN_MS = 90; // Turn-in-place duration before first step
-export const FOLLOW_DISTANCE = 1;
 
 export const DIRS = {
   up: { dx: 0, dy: -1 },

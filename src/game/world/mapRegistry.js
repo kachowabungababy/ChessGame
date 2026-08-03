@@ -7,20 +7,24 @@
 // Object layer "spawns": named arrival points { spawnId, facing }
 
 export const MAPS = {
-  sunroot_town: {
-    id: 'sunroot_town',
-    displayName: 'SUNROOT TOWN',
-    tilemapUrl: '/assets/maps/sunroot_town.json',
+  cotton_town: {
+    id: 'cotton_town',
+    displayName: 'COTTON TOWN',
+    tilemapUrl: '/assets/maps/cotton_town.json',
     tilesets: [
-      { tiledName: 'town_outdoor', key: 'ts_town_outdoor', url: '/assets/tilesets/town_outdoor.png' },
+      { tiledName: 'core_city_and_country', key: 'ts_core_city_and_country', url: '/assets/tilesets/tuxemon_core_city_and_country.png' },
+      { tiledName: 'core_buildings', key: 'ts_core_buildings', url: '/assets/tilesets/tuxemon_core_buildings.png' },
+      { tiledName: 'core_outdoor', key: 'ts_core_outdoor', url: '/assets/tilesets/tuxemon_core_outdoor.png' },
+      { tiledName: 'core_set pieces', key: 'ts_core_set_pieces', url: '/assets/tilesets/tuxemon_core_set_pieces.png' },
+      { tiledName: 'core_outdoor_nature', key: 'ts_core_outdoor_nature', url: '/assets/tilesets/tuxemon_core_outdoor_nature.png' },
     ],
     music: 'sunroot',
-    defaultSpawn: { x: 12, y: 20, facing: 'up' },
+    defaultSpawn: { x: 22, y: 36, facing: 'up' },
     minStage: 1,
   },
 };
 
-export const DEFAULT_MAP_ID = 'sunroot_town';
+export const DEFAULT_MAP_ID = 'cotton_town';
 
 export function getMapDef(mapId) {
   return MAPS[mapId] ?? MAPS[DEFAULT_MAP_ID];
